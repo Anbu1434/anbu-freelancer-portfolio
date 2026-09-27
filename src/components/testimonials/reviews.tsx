@@ -3,7 +3,7 @@ import Image from "next/image";
 import { StartProjectButton } from "@/components/inquiry/start-project-button";
 import { cardClass } from "@/components/ui/card";
 import { ReviewCarousel } from "@/components/testimonials/review-carousel";
-import { testimonials } from "@/content/testimonials";
+import { getTestimonials } from "@/lib/content";
 import { cn, initials, pad } from "@/lib/cn";
 import type { Testimonial } from "@/types/content";
 
@@ -14,7 +14,8 @@ function averageRating(items: Testimonial[]) {
   return (rated.reduce((total, item) => total + (item.rating ?? 0), 0) / rated.length).toFixed(1);
 }
 
-export function Reviews() {
+export async function Reviews() {
+  const testimonials = await getTestimonials();
   if (testimonials.length === 0) return null;
   const average = averageRating(testimonials);
 
@@ -23,7 +24,7 @@ export function Reviews() {
       <ReviewCarousel
         title="Client reviews"
         titleId="reviews-title"
-        lead={<FeedbackPanel average={average} />}
+        lead={<FeedbackPanel average={average} count={testimonials.length} />}
       >
         {testimonials.map((testimonial) => (
           <ReviewCard key={`${testimonial.name}-${testimonial.quote.slice(0, 24)}`} testimonial={testimonial} />
@@ -33,7 +34,7 @@ export function Reviews() {
   );
 }
 
-function FeedbackPanel({ average }: { average: string | null }) {
+function FeedbackPanel({ average, count }: { average: string | null; count: number }) {
   return (
     <div className={cn(cardClass("tint"), "flex flex-col")} data-reveal>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-ink p-5">
@@ -50,8 +51,8 @@ function FeedbackPanel({ average }: { average: string | null }) {
       </div>
       <div className="flex flex-1 flex-col justify-between gap-6 p-5">
         <p>
-          <span className="title block text-[clamp(2rem,3.5vw,2.75rem)]">{pad(testimonials.length)}</span>
-          <span className="text-sm">{testimonials.length === 1 ? "client review" : "client reviews"}</span>
+          <span className="title block text-[clamp(2rem,3.5vw,2.75rem)]">{pad(count)}</span>
+          <span className="text-sm">{count === 1 ? "client review" : "client reviews"}</span>
         </p>
         <StartProjectButton variant="white" size="sm" className="self-start">
           Start project

@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { StartProjectButton } from "@/components/inquiry/start-project-button";
 import { Availability } from "@/components/ui/availability";
-import { navigation, siteConfig } from "@/content/site";
+import { navigation } from "@/lib/site-constants";
+import type { NavSite } from "@/types/site";
 import { cn } from "@/lib/cn";
 
 const icons: Record<string, LucideIcon> = {
@@ -20,19 +21,19 @@ function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function Logo({ onClick }: { onClick?: () => void }) {
+function Logo({ brand, onClick }: { brand: string; onClick?: () => void }) {
   return (
     <Link href="/" onClick={onClick} className="flex items-center gap-3">
       <span aria-hidden="true" className="grid size-10 place-items-center border-2 border-ink bg-paper text-ink shadow-hard-sm">
         <CodeXml className="size-5" />
       </span>
-      <span className="title text-xl">{siteConfig.brand}</span>
+      <span className="title text-xl">{brand}</span>
     </Link>
   );
 }
 
 /** Sidebar on desktop; sticky top bar with a full-screen menu below 1024px. */
-export function SiteNav() {
+export function SiteNav({ site }: { site: NavSite }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const mobileRef = useRef<HTMLElement>(null);
@@ -91,7 +92,7 @@ export function SiteNav() {
   return (
     <>
       <header className="sticky top-0 hidden h-dvh flex-col self-start px-5 py-7 text-on-frame lg:flex">
-        <Logo />
+        <Logo brand={site.brand} />
         <nav aria-label="Primary" className="mt-12">
           <ul className="grid gap-1.5">
             {navigation.map((item) => {
@@ -109,19 +110,19 @@ export function SiteNav() {
         </nav>
         <div className="mt-auto grid gap-1.5">
           <p className="meta px-3.5 pb-3">
-            <Availability long />
+            <Availability status={site.availability} long />
           </p>
           <StartProjectButton variant="accent" size="sm" icon={<Send />} className="mb-2">
             Start project
           </StartProjectButton>
-          {siteConfig.resumeUrl && (
-            <a href={siteConfig.resumeUrl} target="_blank" rel="noopener noreferrer" className="side-link">
+          {site.resumeUrl && (
+            <a href={site.resumeUrl} target="_blank" rel="noopener noreferrer" className="side-link">
               <FileText aria-hidden="true" />
               Resume
               <span className="sr-only"> (opens in a new tab)</span>
             </a>
           )}
-          <a href={`mailto:${siteConfig.email}`} className="side-link">
+          <a href={`mailto:${site.email}`} className="side-link">
             <Send aria-hidden="true" />
             Email me
           </a>
@@ -130,7 +131,7 @@ export function SiteNav() {
 
       <header ref={mobileRef} className="sticky top-0 z-40 bg-frame text-on-frame lg:hidden">
         <div className="flex h-header items-center justify-between gap-4 px-2 sm:px-4">
-          <Logo onClick={close} />
+          <Logo brand={site.brand} onClick={close} />
           <button
             ref={toggleRef}
             type="button"
@@ -173,9 +174,9 @@ export function SiteNav() {
               Start project
             </StartProjectButton>
             <div className="meta mt-auto grid gap-3 px-1">
-              <Availability long />
-              <a href={`mailto:${siteConfig.email}`} className="self-start font-semibold normal-case underline underline-offset-4">
-                {siteConfig.email}
+              <Availability status={site.availability} long />
+              <a href={`mailto:${site.email}`} className="self-start font-semibold normal-case underline underline-offset-4">
+                {site.email}
               </a>
             </div>
           </div>

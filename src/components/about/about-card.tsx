@@ -4,11 +4,15 @@ import { StartProjectButton } from "@/components/inquiry/start-project-button";
 import { Availability } from "@/components/ui/availability";
 import { Card } from "@/components/ui/card";
 import { SocialLinks } from "@/components/ui/social-links";
-import { about, siteConfig } from "@/content/site";
+import { getSettings, toSiteConfig } from "@/lib/content";
 import { cn, initials } from "@/lib/cn";
+import type { SiteConfig } from "@/types/site";
 
 /** The About page's compact "dossier": who, one statement, where — distinct from the home profile card. */
-export function AboutCard({ className }: { className?: string }) {
+export async function AboutCard({ className }: { className?: string }) {
+  const settings = await getSettings();
+  const siteConfig = toSiteConfig(settings);
+  const about = settings.about;
   const facts = [
     { icon: <MapPin />, label: "Based", value: siteConfig.location },
     { icon: <Crosshair />, label: "Focus", value: siteConfig.focus },
@@ -19,13 +23,13 @@ export function AboutCard({ className }: { className?: string }) {
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b-2 border-ink bg-tint px-5 py-2.5">
         <p className="meta font-semibold">~/about.md</p>
         <p className="meta">
-          <Availability long />
+          <Availability status={siteConfig.availability} long />
         </p>
       </div>
 
       <div className="flex flex-1 flex-col p-5 sm:p-6">
         <div className="flex flex-wrap items-center gap-4">
-          <Avatar />
+          <Avatar siteConfig={siteConfig} />
           <div className="min-w-0 flex-1">
             <h2 className="text-lg font-bold leading-tight">{siteConfig.name}</h2>
             <p className="meta mt-0.5 text-ink/75">{siteConfig.title}</p>
@@ -63,11 +67,11 @@ export function AboutCard({ className }: { className?: string }) {
   );
 }
 
-function Avatar() {
+function Avatar({ siteConfig }: { siteConfig: SiteConfig }) {
   return (
     <span className="relative grid size-12 shrink-0 place-items-center overflow-hidden border-2 border-ink bg-accent shadow-hard-sm">
       {siteConfig.portrait ? (
-        <Image src={siteConfig.portrait} alt={`Portrait of ${siteConfig.name}`} fill sizes="3rem" className="object-cover" />
+        <Image src={siteConfig.portrait} alt={siteConfig.portraitAlt ?? `Portrait of ${siteConfig.name}`} fill sizes="3rem" className="object-cover" />
       ) : (
         <span aria-hidden="true" className="title text-lg">
           {initials(siteConfig.name)}

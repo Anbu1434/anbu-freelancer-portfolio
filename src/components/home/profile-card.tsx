@@ -4,14 +4,16 @@ import { StartProjectButton } from "@/components/inquiry/start-project-button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
 import { SocialLinks } from "@/components/ui/social-links";
-import { projects } from "@/content/projects";
-import { services } from "@/content/services";
-import { about, availabilityLabels, siteConfig } from "@/content/site";
-import { stack } from "@/content/stack";
+import { getProjects, getServices, getSettings, getStack, toSiteConfig } from "@/lib/content";
 import { cn, initials, pad } from "@/lib/cn";
+import { availabilityLabels } from "@/lib/site-constants";
+import type { SiteConfig } from "@/types/site";
 
 /** The accent profile card — the page's focal point. Tiles show counts derived from real content — never invented metrics. */
-export function ProfileCard({ className }: { className?: string }) {
+export async function ProfileCard({ className }: { className?: string }) {
+  const [settings, projects, services, stack] = await Promise.all([getSettings(), getProjects(), getServices(), getStack()]);
+  const siteConfig = toSiteConfig(settings);
+  const about = settings.about;
   const tiles = [
     { value: pad(projects.length), label: "Projects" },
     { value: pad(services.length), label: "Services" },
@@ -25,7 +27,7 @@ export function ProfileCard({ className }: { className?: string }) {
       className={cn("grid gap-5 p-4 sm:grid-cols-[11rem_minmax(0,1fr)] sm:p-5 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-6", className)}
       data-reveal
     >
-      <Portrait />
+      <Portrait siteConfig={siteConfig} />
 
       <div className="flex min-w-0 flex-col">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -66,13 +68,13 @@ export function ProfileCard({ className }: { className?: string }) {
   );
 }
 
-function Portrait() {
+function Portrait({ siteConfig }: { siteConfig: SiteConfig }) {
   return (
     <div className="relative aspect-[4/3] w-full overflow-hidden border-2 border-ink bg-tint sm:aspect-[4/5]">
       {siteConfig.portrait ? (
         <Image
           src={siteConfig.portrait}
-          alt={`Portrait of ${siteConfig.name}`}
+          alt={siteConfig.portraitAlt ?? `Portrait of ${siteConfig.name}`}
           fill
           sizes="(min-width: 1024px) 13rem, (min-width: 640px) 11rem, 100vw"
           className="object-cover"

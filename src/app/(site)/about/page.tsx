@@ -1,22 +1,25 @@
 import { BriefcaseBusiness } from "lucide-react";
+import type { Metadata } from "next";
 import { AboutCard } from "@/components/about/about-card";
 import { TechCard } from "@/components/about/tech-card";
 import { CtaCard } from "@/components/contact/cta-card";
 import { ListCard } from "@/components/ui/list-card";
 import { PageTitle } from "@/components/ui/page-title";
-import { experience } from "@/content/experience";
-import { siteConfig } from "@/content/site";
-import { stack } from "@/content/stack";
+import { getExperience, getSiteConfig, getStack } from "@/lib/content";
 import { splitClass, splitColumnClass } from "@/lib/grid";
 import { createMetadata } from "@/lib/seo";
 
-export const metadata = createMetadata({
-  title: "About",
-  description: `${siteConfig.role} focused on web, product UI, and AI. Based in ${siteConfig.location}.`,
-  path: "/about",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const siteConfig = await getSiteConfig();
+  return createMetadata(siteConfig, {
+    title: "About",
+    description: `${siteConfig.role} focused on web, product UI, and AI. Based in ${siteConfig.location}.`,
+    path: "/about",
+  });
+}
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const [experience, stack] = await Promise.all([getExperience(), getStack()]);
   const hasExperience = experience.length > 0;
   const columnClass = hasExperience ? splitColumnClass : "flex flex-col gap-6 lg:gap-8";
 

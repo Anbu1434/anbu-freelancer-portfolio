@@ -2,12 +2,10 @@
 
 import { ArrowLeft, Check, X } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent, type MouseEvent } from "react";
-import { siteConfig } from "@/content/site";
 import { cn } from "@/lib/cn";
 import {
   emptyInquiry,
   inquiryFields,
-  inquiryServices,
   validateInquiryField,
   type InquiryErrors,
   type InquiryField,
@@ -29,7 +27,7 @@ const steps: Record<InquiryField, { label: string; heading: string; hint: string
 type Status = "editing" | "sending" | "success" | "error";
 
 /** Four-step project inquiry in a native modal dialog (Escape, focus trap and backdrop come built in). */
-export function InquiryDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function InquiryDialog({ open, onClose, services, contactEmail }: { open: boolean; onClose: () => void; services: string[]; contactEmail: string }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const honeypotRef = useRef<HTMLInputElement>(null);
   const startedAtRef = useRef(0);
@@ -205,7 +203,7 @@ export function InquiryDialog({ open, onClose }: { open: boolean; onClose: () =>
 
                 {field === "services" && (
                   <fieldset className="inquiry-options" aria-labelledby="inquiry-title" aria-describedby={describedBy}>
-                    {inquiryServices.map((service, index) => (
+                    {services.map((service, index) => (
                       <label key={service} className="inquiry-option">
                         <input
                           type="checkbox"
@@ -259,8 +257,8 @@ export function InquiryDialog({ open, onClose }: { open: boolean; onClose: () =>
                   <p className="font-bold">Couldn&apos;t send your request.</p>
                   <p>
                     Please try again, or email{" "}
-                    <a href={`mailto:${siteConfig.email}`} className="link-underline font-semibold">
-                      {siteConfig.email}
+                    <a href={`mailto:${contactEmail}`} className="link-underline font-semibold">
+                      {contactEmail}
                     </a>
                   </p>
                 </div>

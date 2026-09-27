@@ -17,7 +17,7 @@ import {
 type Mark = { path: string; hex: string };
 
 /**
- * Brand marks keyed by the names used in `@/content/stack`. simple-icons omits
+ * Brand marks keyed by the technology names entered in the admin stack editor. simple-icons omits
  * trademark-restricted logos (AWS is one), so a name missing here renders as a
  * wordmark tile rather than a mystery glyph.
  */

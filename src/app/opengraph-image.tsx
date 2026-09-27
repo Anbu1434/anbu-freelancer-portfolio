@@ -1,11 +1,15 @@
 import { ImageResponse } from "next/og";
-import { availabilityLabels, hero, siteConfig } from "@/content/site";
+import { getSettings, toSiteConfig } from "@/lib/content";
+import { availabilityLabels } from "@/lib/site-constants";
 
-export const alt = `${siteConfig.brand} — ${siteConfig.title}`;
+export const alt = "Portfolio preview";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function OpengraphImage() {
+export default async function OpengraphImage() {
+  const settings = await getSettings();
+  const siteConfig = toSiteConfig(settings);
+  const hero = settings.hero;
   return new ImageResponse(
     (
       <div
@@ -39,7 +43,7 @@ export default function OpengraphImage() {
         >
           {hero.lines.map((line, index) => (
             <span
-              key={line}
+              key={index}
               style={index === hero.accentLine ? { background: "#ff6b4a", padding: "0 12px", marginLeft: 120 } : {}}
             >
               {line}

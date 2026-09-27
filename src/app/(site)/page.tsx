@@ -1,4 +1,5 @@
 import { FolderCode } from "lucide-react";
+import type { Metadata } from "next";
 import { CtaCard } from "@/components/contact/cta-card";
 import { ProfileCard } from "@/components/home/profile-card";
 import { Reviews } from "@/components/testimonials/reviews";
@@ -6,19 +7,21 @@ import { ButtonLink } from "@/components/ui/button-link";
 import { JsonLd } from "@/components/ui/json-ld";
 import { ListCard } from "@/components/ui/list-card";
 import { PageTitle } from "@/components/ui/page-title";
-import { siteConfig } from "@/content/site";
+import { getServices, getSiteConfig } from "@/lib/content";
 import { splitClass, splitColumnClass } from "@/lib/grid";
 import { getFeaturedProjects, getProjectHref, linksToLiveSite } from "@/lib/projects";
 import { createMetadata, homeJsonLd } from "@/lib/seo";
 
-export const metadata = createMetadata({ path: "/" });
+export async function generateMetadata(): Promise<Metadata> {
+  return createMetadata(await getSiteConfig(), { path: "/" });
+}
 
-export default function HomePage() {
-  const featured = getFeaturedProjects();
+export default async function HomePage() {
+  const [siteConfig, services, featured] = await Promise.all([getSiteConfig(), getServices(), getFeaturedProjects()]);
 
   return (
     <>
-      <JsonLd data={homeJsonLd()} />
+      <JsonLd data={homeJsonLd(siteConfig, services)} />
 
       <div className={splitClass}>
         <section aria-labelledby="profile-title" className={splitColumnClass}>

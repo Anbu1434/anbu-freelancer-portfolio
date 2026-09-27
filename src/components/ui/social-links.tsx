@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { FiverrIcon, GithubIcon, UpworkIcon } from "@/components/ui/brand-icons";
-import { siteConfig, socialLabels } from "@/content/site";
+import { getSiteConfig } from "@/lib/content";
+import { socialLabels } from "@/lib/site-constants";
 import type { SiteConfig } from "@/types/site";
 
 type SocialKey = keyof SiteConfig["social"];
@@ -11,7 +12,8 @@ const icons: Record<SocialKey, ReactNode> = {
   upwork: <UpworkIcon />,
 };
 
-export function SocialLinks({ className }: { className?: string }) {
+export async function SocialLinks({ className }: { className?: string }) {
+  const siteConfig = await getSiteConfig();
   const socials = (Object.entries(siteConfig.social) as [SocialKey, string | undefined][]).filter(
     (entry): entry is [SocialKey, string] => Boolean(entry[1]),
   );

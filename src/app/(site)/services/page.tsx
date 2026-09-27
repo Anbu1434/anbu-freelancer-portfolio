@@ -1,18 +1,22 @@
+import type { Metadata } from "next";
 import { CtaCard } from "@/components/contact/cta-card";
 import { ServiceCard } from "@/components/services/service-card";
 import { cardClass } from "@/components/ui/card";
 import { PageTitle } from "@/components/ui/page-title";
-import { services, workProcess } from "@/content/services";
+import { getProcessSteps, getServices, getSiteConfig } from "@/lib/content";
 import { cn } from "@/lib/cn";
 import { createMetadata } from "@/lib/seo";
 
-export const metadata = createMetadata({
-  title: "Services",
+export async function generateMetadata(): Promise<Metadata> {
+  return createMetadata(await getSiteConfig(), {
+    title: "Services",
   description: "Web applications, e-commerce, product UI, AI integration, SaaS development, and SEO & performance — from first idea to production.",
-  path: "/services",
-});
+    path: "/services",
+  });
+}
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const [services, workProcess] = await Promise.all([getServices(), getProcessSteps()]);
   return (
     <>
       <PageTitle>What I build</PageTitle>

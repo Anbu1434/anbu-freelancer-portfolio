@@ -3,10 +3,11 @@ import { StartProjectButton } from "@/components/inquiry/start-project-button";
 import { Availability } from "@/components/ui/availability";
 import { ButtonLink } from "@/components/ui/button-link";
 import { cardClass } from "@/components/ui/card";
-import { siteConfig } from "@/content/site";
+import { getSiteConfig } from "@/lib/content";
 import { cn } from "@/lib/cn";
 
-export function CtaCard() {
+export async function CtaCard() {
+  const siteConfig = await getSiteConfig();
   return (
     <section
       aria-labelledby="cta-title"
@@ -15,7 +16,7 @@ export function CtaCard() {
     >
       <div>
         <p className="meta">
-          <Availability long />
+          <Availability status={siteConfig.availability} long />
         </p>
         <h2 id="cta-title" className="title mt-4 text-[clamp(2rem,4.6vw,3.75rem)]">
           Have something worth building?

@@ -11,23 +11,22 @@ import { PageTitle } from "@/components/ui/page-title";
 import { ProjectVisual } from "@/components/work/project-visual";
 import { cn, pad } from "@/lib/cn";
 import { splitClass, splitColumnClass } from "@/lib/grid";
-import { caseStudyProjects, getNextProject, getProject } from "@/lib/projects";
+import { getSiteConfig } from "@/lib/content";
+import { getCaseStudyProjects, getNextProject, getProject } from "@/lib/projects";
 import { createMetadata, projectJsonLd } from "@/lib/seo";
 import type { Project } from "@/types/project";
 
 type Props = { params: Promise<{ slug: string }> };
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return caseStudyProjects.map((project) => ({ slug: project.slug }));
+export async function generateStaticParams() {
+  return (await getCaseStudyProjects()).map((project) => ({ slug: project.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const project = getProject(slug);
+  const [site, project] = await Promise.all([getSiteConfig(), getProject(slug)]);
   if (!project) return {};
-  return createMetadata({ title: project.title, description: project.description, path: `/work/${slug}` });
+  return createMetadata(site, { title: project.title, description: project.description, path: `/work/${slug}` });
 }
 
 type Section = { label: string; body: ReactNode; wide?: boolean };
@@ -91,10 +90,10 @@ function buildSections(project: Project) {
 
 export default async function CaseStudyPage({ params }: Props) {
   const { slug } = await params;
-  const project = getProject(slug);
+  const project = await getProject(slug);
   if (!project) notFound();
 
-  const next = getNextProject(slug);
+  const [next, site] = await Promise.all([getNextProject(slug), getSiteConfig()]);
   const sections = buildSections(project);
 
   const details: ListCardItem[] = [
@@ -113,7 +112,7 @@ export default async function CaseStudyPage({ params }: Props) {
 
   return (
     <>
-      <JsonLd data={projectJsonLd(project)} />
+      <JsonLd data={projectJsonLd(site, project)} />
 
       <div className={splitClass}>
         <section aria-labelledby="project-title" className={splitColumnClass}>

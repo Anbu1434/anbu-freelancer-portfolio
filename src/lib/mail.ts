@@ -1,4 +1,4 @@
-import { siteConfig } from "@/content/site";
+import { getSettings } from "@/lib/content";
 import type { InquiryValues } from "@/lib/inquiry";
 
 /**
@@ -35,7 +35,7 @@ export async function sendInquiryEmail(values: InquiryValues): Promise<boolean> 
       },
       body: JSON.stringify({
         from: process.env.CONTACT_FROM_EMAIL ?? "Portfolio <onboarding@resend.dev>",
-        to: [process.env.CONTACT_TO_EMAIL ?? siteConfig.email],
+        to: [process.env.CONTACT_TO_EMAIL ?? (await getSettings()).email],
         subject: `New project request — ${values.name.replace(/[\r\n]+/g, " ")}`,
         text,
       }),

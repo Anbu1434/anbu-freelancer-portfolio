@@ -12,8 +12,9 @@ export type SiteConfig = {
   email: string;
   url: string;
   year: string;
-  /** Path under /public. Without one, an initials monogram is shown. */
+  /** ImageKit URL. Without one, an initials monogram is shown. */
   portrait?: string;
+  portraitAlt?: string;
   resumeUrl?: string;
   social: {
     github?: string;
@@ -23,3 +24,6 @@ export type SiteConfig = {
   builtWith: string;
   openTo: string;
 };
+
+/** The slice of the site config the client-side navigation needs. */
+export type NavSite = Pick<SiteConfig, "brand" | "name" | "email" | "resumeUrl" | "availability">;

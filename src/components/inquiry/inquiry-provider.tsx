@@ -13,7 +13,7 @@ export function useStartProject() {
 /** The query that /contact redirects to (see next.config.ts); it opens the modal on load. */
 export const START_PROJECT_PARAM = "start";
 
-export function InquiryProvider({ children }: { children: ReactNode }) {
+export function InquiryProvider({ children, services, contactEmail }: { children: ReactNode; services: string[]; contactEmail: string }) {
   const [open, setOpen] = useState(false);
   const start = useCallback(() => setOpen(true), []);
 
@@ -32,7 +32,7 @@ export function InquiryProvider({ children }: { children: ReactNode }) {
   return (
     <InquiryContext.Provider value={start}>
       {children}
-      <InquiryDialog open={open} onClose={() => setOpen(false)} />
+      <InquiryDialog open={open} onClose={() => setOpen(false)} services={services} contactEmail={contactEmail} />
     </InquiryContext.Provider>
   );
 }

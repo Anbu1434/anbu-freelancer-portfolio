@@ -1,17 +1,21 @@
+import type { Metadata } from "next";
 import { CtaCard } from "@/components/contact/cta-card";
 import { PageTitle } from "@/components/ui/page-title";
 import { ProjectCard } from "@/components/work/project-card";
 import { pad } from "@/lib/cn";
-import { projects } from "@/lib/projects";
+import { getProjects, getSiteConfig } from "@/lib/content";
 import { createMetadata } from "@/lib/seo";
 
-export const metadata = createMetadata({
-  title: "Work",
-  description: "Selected projects across web applications, product UI, and AI.",
-  path: "/work",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return createMetadata(await getSiteConfig(), {
+    title: "Work",
+    description: "Selected projects across web applications, product UI, and AI.",
+    path: "/work",
+  });
+}
 
-export default function WorkPage() {
+export default async function WorkPage() {
+  const projects = await getProjects();
   return (
     <>
       <PageTitle eyebrow={`${pad(projects.length)} projects`}>Selected work</PageTitle>
