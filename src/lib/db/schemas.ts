@@ -1,13 +1,14 @@
 import { z } from "zod";
 
 const text = (max: number) => z.string().trim().min(1, "Required.").max(max, `Keep this under ${max} characters.`);
+// `.optional()` goes outermost so the inferred type keeps the key optional; "" becomes undefined.
 const optionalText = (max: number) =>
   z
     .string()
     .trim()
     .max(max, `Keep this under ${max} characters.`)
-    .optional()
-    .transform((value) => value || undefined);
+    .transform((value) => value || undefined)
+    .optional();
 const httpUrl = z
   .string()
   .trim()
@@ -15,8 +16,8 @@ const httpUrl = z
   .regex(/^https?:\/\/\S+$/, "Must be a full URL starting with http:// or https://.");
 const optionalUrl = z
   .union([httpUrl, z.literal("")])
-  .optional()
-  .transform((value) => value || undefined);
+  .transform((value) => value || undefined)
+  .optional();
 const stringList = (max: number) => z.array(z.string().trim().min(1, "Remove empty items.").max(max)).max(50);
 
 export const imageRefSchema = z.object({
@@ -89,8 +90,8 @@ export const testimonialSchema = z.object({
     .number()
     .min(1, "Between 1 and 5.")
     .max(5, "Between 1 and 5.")
-    .optional()
-    .transform((value) => (value === undefined ? undefined : Math.round(value * 10) / 10)),
+    .transform((value) => Math.round(value * 10) / 10)
+    .optional(),
   published: z.boolean(),
 });
 export type TestimonialInput = z.infer<typeof testimonialSchema>;

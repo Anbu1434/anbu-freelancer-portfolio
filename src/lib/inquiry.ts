@@ -15,13 +15,14 @@ export const inquiryFields = ["name", "phone", "services", "businessDetails"] as
 export type InquiryField = (typeof inquiryFields)[number];
 export type InquiryValues = {
   name: string;
+  email: string;
   phone: string;
   services: string[];
   businessDetails: string;
 };
-export type InquiryErrors = Partial<Record<InquiryField, string>>;
+export type InquiryErrors = Partial<Record<keyof InquiryValues, string>>;
 
-export const emptyInquiry: InquiryValues = { name: "", phone: "", services: [], businessDetails: "" };
+export const emptyInquiry: InquiryValues = { name: "", email: "", phone: "", services: [], businessDetails: "" };
 
 const phonePattern = /^\+?[\d\s\-().]+$/;
 
@@ -71,6 +72,7 @@ export function normalizeInquiry(input: Partial<Record<keyof InquiryValues, unkn
 
   return {
     name: text(input.name),
+    email: text(input.email).toLowerCase(),
     phone: text(input.phone),
     services: [...new Set(services)],
     businessDetails: text(input.businessDetails),
