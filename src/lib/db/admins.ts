@@ -25,14 +25,21 @@ export async function findAdminById(id: string) {
   return doc ? toAdmin(doc) : null;
 }
 
-/** Creates the admin, or resets the password of an existing one (signing out all sessions). */
+/**
+ * There is exactly one admin: creates it, or replaces the existing account's email and password
+ * (signing out all sessions), so a reset with a new email never leaves the old login working.
+ */
 export async function upsertAdmin(email: string, passwordHash: string) {
-  const doc = await (await collection()).findOneAndUpdate(
-    { email: email.trim().toLowerCase() },
-    { $set: { passwordHash }, $inc: { sessionVersion: 1 } },
+  const col = await collection();
+  const existing = await col.findOne({}, { sort: { _id: 1 } });
+  const doc = await col.findOneAndUpdate(
+    existing ? { _id: existing._id } : { email: email.trim().toLowerCase() },
+    { $set: { email: email.trim().toLowerCase(), passwordHash }, $inc: { sessionVersion: 1 } },
     { upsert: true, returnDocument: "after" },
   );
   if (!doc) throw new Error("Failed to save admin.");
+  // Remove any extra accounts left by older versions of this script.
+  await col.deleteMany({ _id: { $ne: doc._id } });
   return toAdmin(doc);
 }
 

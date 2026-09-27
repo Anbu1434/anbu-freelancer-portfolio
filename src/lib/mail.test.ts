@@ -40,4 +40,12 @@ describe("templates", () => {
     expect(email.replyTo).toBe("owner@x.y");
     expect(email.text).toContain("Thanks!");
   });
+
+  it("auto-reply never echoes free text the visitor typed (no spam relay)", () => {
+    const spam = { ...values, name: "Win a prize at evil.example", businessDetails: "Click http://evil.example now" };
+    const email = inquiryAutoReply(spam, { brand: "AnbuDev", name: "Anbu", email: "owner@x.y", autoReplyMessage: "Thanks!" });
+    expect(email.text).not.toContain("evil.example");
+    expect(email.subject).not.toContain("evil.example");
+    expect(email.text).toContain("SEO");
+  });
 });

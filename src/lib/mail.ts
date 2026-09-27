@@ -80,14 +80,14 @@ export function inquiryAutoReply(
     to: values.email,
     replyTo: settings.email,
     subject: `We received your project request — ${settings.brand}`,
+    // Only the owner's text and the validated service names: echoing what the visitor typed would let
+    // anyone send arbitrary content to any address from this domain.
     text: [
-      `Hi ${oneLine(values.name)},`,
+      "Hi,",
       "",
       settings.autoReplyMessage,
       "",
-      "Here's a copy of what you sent:",
-      "",
-      ...requestSummary(values),
+      `Services requested: ${values.services.join(", ")}`,
       "",
       `— ${settings.name}`,
     ].join("\n"),

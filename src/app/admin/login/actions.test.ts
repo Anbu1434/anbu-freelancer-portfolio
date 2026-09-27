@@ -3,13 +3,14 @@ import { login } from "@/app/admin/login/actions";
 import { hashPassword } from "@/lib/auth/password";
 
 let passwordHash = "";
+let ip = "203.0.113.7";
 
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(() => {
     throw new Error("NEXT_REDIRECT");
   }),
 }));
-vi.mock("@/lib/request", () => ({ clientIp: vi.fn(async () => "203.0.113.7") }));
+vi.mock("@/lib/request", () => ({ clientIp: vi.fn(async () => ip) }));
 vi.mock("@/lib/auth/session-cookie", () => ({ setSessionCookie: vi.fn(async () => {}) }));
 vi.mock("@/lib/db/admins", () => ({
   findAdminByEmail: vi.fn(async (email: string) =>
@@ -33,6 +34,14 @@ describe("login", () => {
     for (let i = 0; i < 8; i++) {
       await expect(login(undefined, form("me@example.com", "correct-horse-battery"))).rejects.toThrow("NEXT_REDIRECT");
     }
+  });
+
+  it("an IP that is over the limit stays limited no matter how many emails it tries", async () => {
+    ip = "198.51.100.99";
+    const results: (string | undefined)[] = [];
+    for (let i = 0; i < 1100; i++) results.push((await login(undefined, form(`spam${i}@example.com`, "x")))?.error);
+    expect(results.slice(5).every((error) => error?.startsWith("Too many attempts"))).toBe(true);
+    ip = "203.0.113.7";
   });
 
   it("returns the same error for an unknown email and a wrong password", async () => {

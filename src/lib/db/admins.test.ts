@@ -19,6 +19,15 @@ describe("admins repository", () => {
     expect(second.sessionVersion).toBe(first.sessionVersion + 1);
   });
 
+  it("running create-admin with a different email replaces the single admin", async () => {
+    const first = await upsertAdmin("old@example.com", "hash1");
+    const second = await upsertAdmin("new@example.com", "hash2");
+    expect(second.id).toBe(first.id);
+    expect(second.sessionVersion).toBe(first.sessionVersion + 1);
+    expect(await findAdminByEmail("old@example.com")).toBeNull();
+    expect((await findAdminByEmail("new@example.com"))?.passwordHash).toBe("hash2");
+  });
+
   it("updatePassword returns the new sessionVersion", async () => {
     const admin = await upsertAdmin("me@example.com", "hash1");
     expect(await updatePassword(admin.id, "hash2")).toBe(admin.sessionVersion + 1);

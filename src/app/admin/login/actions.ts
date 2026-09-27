@@ -24,9 +24,8 @@ export async function login(_state: LoginState, formData: FormData): Promise<Log
 
   const email = parsed.data.email.toLowerCase();
   const ipKey = `ip:${await clientIp()}`;
-  const ipLimited = limiter.hit(ipKey);
-  const emailLimited = limiter.hit(`email:${email}`);
-  if (ipLimited || emailLimited) return { error: "Too many attempts. Try again in 15 minutes.", email: typedEmail };
+  // Checked in turn: a limited IP must not be able to add email keys (and so grow the limiter's map).
+  if (limiter.hit(ipKey) || limiter.hit(`email:${email}`)) return { error: "Too many attempts. Try again in 15 minutes.", email: typedEmail };
 
   const admin = await findAdminByEmail(email);
   dummyHash ??= hashPassword("not-the-password");

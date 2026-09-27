@@ -19,7 +19,13 @@ function getClient() {
   const uri = process.env.MONGODB_URI;
   if (!uri) throw new Error("MONGODB_URI is not set.");
   // ignoreUndefined: optional fields left undefined are omitted instead of stored as null.
-  globalForMongo.mongoClient ??= new MongoClient(uri, { ignoreUndefined: true }).connect();
+  // A failed connect is not cached, so the next request retries instead of failing until restart.
+  globalForMongo.mongoClient ??= new MongoClient(uri, { ignoreUndefined: true, serverSelectionTimeoutMS: 5000 })
+    .connect()
+    .catch((error) => {
+      globalForMongo.mongoClient = undefined;
+      throw error;
+    });
   return globalForMongo.mongoClient;
 }
 

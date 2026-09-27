@@ -24,3 +24,13 @@ describe("createRateLimiter", () => {
     expect(limiter.hit("a", 1)).toBe(false);
   });
 });
+
+describe("createRateLimiter under key flooding", () => {
+  it("keeps an over-limit key limited when many other keys are added", () => {
+    const limiter = createRateLimiter({ windowMs: 1000, max: 1 });
+    limiter.hit("attacker", 0);
+    expect(limiter.hit("attacker", 1)).toBe(true);
+    for (let i = 0; i < 2000; i++) limiter.hit(`noise-${i}`, 2);
+    expect(limiter.hit("attacker", 3)).toBe(true);
+  });
+});

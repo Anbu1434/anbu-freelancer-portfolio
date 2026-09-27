@@ -1,10 +1,11 @@
 "use server";
 
 import { getSettings } from "@/lib/content";
+import type { Settings } from "@/lib/db/schemas";
 import { createInquiry, markEmailFailed } from "@/lib/db/inquiries";
 import { normalizeInquiry, validateInquiry, type InquiryErrors, type InquiryValues } from "@/lib/inquiry";
 import { processInquiry } from "@/lib/inquiry-flow";
-import { sendEmail } from "@/lib/mail";
+import { inquiryNotification, sendEmail } from "@/lib/mail";
 import { createRateLimiter } from "@/lib/rate-limit";
 import { clientIp } from "@/lib/request";
 
@@ -28,12 +29,25 @@ export async function submitInquiry(submission: InquirySubmission): Promise<Inqu
   // Time trap: submitted faster than a person could fill in the steps.
   if (!submission.startedAt || Date.now() - submission.startedAt < MIN_FILL_MS) return { status: "error" };
 
-  const settings = await getSettings();
+  let settings: Settings | null = null;
+  try {
+    settings = await getSettings();
+  } catch (error) {
+    console.error("[inquiry] Settings unavailable (database down?) — falling back to CONTACT_TO_EMAIL", error);
+  }
+
   const values = normalizeInquiry(submission);
-  const errors = validateInquiry(values, settings.inquiryServices);
+  // Without settings the offered services are unknown; the other fields are still validated.
+  const errors = validateInquiry(values, settings?.inquiryServices ?? values.services);
   if (Object.keys(errors).length > 0) return { status: "invalid", errors };
 
   if (limiter.hit(await clientIp())) return { status: "error" };
+
+  if (!settings) {
+    const ownerEmail = process.env.CONTACT_TO_EMAIL;
+    const notified = ownerEmail ? await sendEmail(inquiryNotification(values, null, ownerEmail)) : false;
+    return notified ? { status: "success" } : { status: "error" };
+  }
 
   const received = await processInquiry(values, { settings, createInquiry, markEmailFailed, sendEmail });
   return received ? { status: "success" } : { status: "error" };
