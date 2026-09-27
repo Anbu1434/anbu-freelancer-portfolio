@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { findAdminByEmail, findAdminById, updatePassword, upsertAdmin } from "@/lib/db/admins";
-import { useTestDb } from "@/test/mongo";
+import { setupTestDb } from "@/test/mongo";
 
-useTestDb();
+setupTestDb();
 
 describe("admins repository", () => {
   it("creates an admin with a lowercased email", async () => {

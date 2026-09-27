@@ -251,7 +251,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Produces:
   - `getDb(): Promise<Db>`, `closeDb(): Promise<void>`, `ensureIndexes(): Promise<void>`, `collections` name map.
   - Schemas + inferred types: `imageRefSchema`/`ImageRef`, `settingsSchema`/`Settings`, `serviceSchema`/`ServiceInput`, `processStepSchema`/`ProcessStepInput`, `experienceSchema`/`ExperienceInput`, `stackGroupSchema`/`StackGroupInput`, `testimonialSchema`/`TestimonialInput`, `projectSchema`/`ProjectInput`, `loginSchema`, `passwordChangeSchema`, `replySchema`, `inquiryStatuses`, `InquiryStatus`, `availabilityValues`.
-  - `useTestDb()` for repository tests.
+  - `setupTestDb()` for repository tests.
 
 - [ ] **Step 1: Create `src/lib/db/client.ts`**
 
@@ -308,7 +308,7 @@ import { afterAll, beforeAll, beforeEach } from "vitest";
 import { closeDb, ensureIndexes, getDb } from "@/lib/db/client";
 
 /** Starts one in-memory MongoDB per test file and empties it before each test. */
-export function useTestDb() {
+export function setupTestDb() {
   let server: MongoMemoryServer;
 
   beforeAll(async () => {
@@ -601,9 +601,9 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 import { describe, expect, it } from "vitest";
 import { createOrderedRepo } from "@/lib/db/ordered-repo";
 import { repos } from "@/lib/db/repos";
-import { useTestDb } from "@/test/mongo";
+import { setupTestDb } from "@/test/mongo";
 
-useTestDb();
+setupTestDb();
 
 type Item = { title: string; note?: string };
 const repo = createOrderedRepo<Item>("services");
@@ -842,9 +842,9 @@ export async function saveSettings(data: Settings) {
 ```ts
 import { describe, expect, it } from "vitest";
 import { addReply, countInquiries, createInquiry, getInquiry, listInquiries, markEmailFailed, setInquiryStatus } from "@/lib/db/inquiries";
-import { useTestDb } from "@/test/mongo";
+import { setupTestDb } from "@/test/mongo";
 
-useTestDb();
+setupTestDb();
 
 const values = { name: "Ada", email: "ada@example.com", phone: "+91 98765 43210", services: ["SEO"], businessDetails: "A new shop site." };
 
@@ -994,9 +994,9 @@ Note: this imports `InquiryValues` from `@/lib/inquiry`, which gains an `email` 
 ```ts
 import { describe, expect, it } from "vitest";
 import { findAdminByEmail, findAdminById, updatePassword, upsertAdmin } from "@/lib/db/admins";
-import { useTestDb } from "@/test/mongo";
+import { setupTestDb } from "@/test/mongo";
 
-useTestDb();
+setupTestDb();
 
 describe("admins repository", () => {
   it("creates an admin with a lowercased email", async () => {
@@ -1173,10 +1173,10 @@ export function verifyPassword(password: string, hash: string) {
 import { describe, expect, it } from "vitest";
 import { repos } from "@/lib/db/repos";
 import { findSettings } from "@/lib/db/settings";
-import { useTestDb } from "@/test/mongo";
+import { setupTestDb } from "@/test/mongo";
 import { seedDatabase } from "./seed-core";
 
-useTestDb();
+setupTestDb();
 
 describe("seedDatabase", () => {
   it("imports the current content once and skips non-empty collections after", async () => {
@@ -1222,7 +1222,7 @@ import { testimonials } from "./seed-data/testimonials";
 // The service options previously hard-coded in src/lib/inquiry.ts.
 const inquiryServices = ["Website Development", "E-commerce", "Custom Software", "AI / Automation", "Mobile App", "UI/UX Design", "SEO"];
 
-async function seedCollection<S extends z.ZodType>(repo: OrderedRepo<z.infer<S>>, schema: S, items: unknown[]) {
+async function seedCollection<S extends z.ZodType<object>>(repo: OrderedRepo<z.infer<S>>, schema: S, items: unknown[]) {
   if ((await repo.count()) > 0) return "skipped" as const;
   for (const item of items) await repo.create(schema.parse(item));
   return "seeded" as const;
@@ -1477,14 +1477,14 @@ export const getTestimonials = cached("testimonials", async (): Promise<Testimon
 ```ts
 import { describe, expect, it, vi } from "vitest";
 import { repos } from "@/lib/db/repos";
-import { useTestDb } from "@/test/mongo";
+import { setupTestDb } from "@/test/mongo";
 
 // Outside Next there is no incremental cache; call the loaders directly.
 vi.mock("next/cache", () => ({ unstable_cache: <T>(load: T) => load }));
 
 const { getCaseStudyProjects, getNextProject, getProject } = await import("@/lib/projects");
 
-useTestDb();
+setupTestDb();
 
 const base = { description: "d", year: "2026", technologies: ["React"], featured: true, features: [], metrics: [] };
 
@@ -3302,13 +3302,13 @@ import { refresh } from "@/lib/admin/refresh";
 import { repos } from "@/lib/db/repos";
 import { projectSchema } from "@/lib/db/schemas";
 import { deleteReplacedImages } from "@/lib/imagekit";
-import { useTestDb } from "@/test/mongo";
+import { setupTestDb } from "@/test/mongo";
 
 vi.mock("@/lib/auth/dal", () => ({ requireAdmin: vi.fn(async () => ({ id: "a1", email: "me@example.com" })) }));
 vi.mock("@/lib/admin/refresh", () => ({ refresh: vi.fn() }));
 vi.mock("@/lib/imagekit", () => ({ deleteReplacedImages: vi.fn(async () => {}) }));
 
-useTestDb();
+setupTestDb();
 
 beforeEach(() => {
   process.env.IMAGEKIT_URL_ENDPOINT = "https://ik.imagekit.io/demo";

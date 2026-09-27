@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { createOrderedRepo } from "@/lib/db/ordered-repo";
 import { repos } from "@/lib/db/repos";
-import { useTestDb } from "@/test/mongo";
+import { setupTestDb } from "@/test/mongo";
 
-useTestDb();
+setupTestDb();
 
 type Item = { title: string; note?: string };
 const repo = createOrderedRepo<Item>("services");

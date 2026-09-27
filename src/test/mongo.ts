@@ -3,7 +3,7 @@ import { afterAll, beforeAll, beforeEach } from "vitest";
 import { closeDb, ensureIndexes, getDb } from "@/lib/db/client";
 
 /** Starts one in-memory MongoDB per test file and empties it before each test. */
-export function useTestDb() {
+export function setupTestDb() {
   let server: MongoMemoryServer;
 
   beforeAll(async () => {

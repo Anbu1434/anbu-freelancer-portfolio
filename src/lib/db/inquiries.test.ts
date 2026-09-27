@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { addReply, countInquiries, createInquiry, getInquiry, listInquiries, markEmailFailed, setInquiryStatus } from "@/lib/db/inquiries";
-import { useTestDb } from "@/test/mongo";
+import { setupTestDb } from "@/test/mongo";
 
-useTestDb();
+setupTestDb();
 
 const values = { name: "Ada", email: "ada@example.com", phone: "+91 98765 43210", services: ["SEO"], businessDetails: "A new shop site." };
 
