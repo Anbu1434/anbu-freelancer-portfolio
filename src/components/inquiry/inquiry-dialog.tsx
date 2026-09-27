@@ -15,6 +15,7 @@ import { submitInquiry } from "@/lib/inquiry-action";
 
 const steps: Record<InquiryField, { label: string; heading: string; hint: string }> = {
   name: { label: "Name", heading: "What should we call you?", hint: "First name is plenty." },
+  email: { label: "Email", heading: "Where should we reply?", hint: "We'll send a copy of your request here." },
   phone: { label: "Phone", heading: "How can we reach you?", hint: "Drop your WhatsApp or phone number." },
   services: { label: "Service", heading: "What do you need?", hint: "Pick the services that fit your project." },
   businessDetails: {
@@ -100,7 +101,7 @@ export function InquiryDialog({ open, onClose, services, contactEmail }: { open:
     event.preventDefault();
     if (status === "sending") return;
 
-    const error = validateInquiryField(field, values);
+    const error = validateInquiryField(field, values, services);
     if (error) {
       setErrors((current) => ({ ...current, [field]: error }));
       dialogRef.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus();
@@ -152,6 +153,7 @@ export function InquiryDialog({ open, onClose, services, contactEmail }: { open:
               Project request received!
             </h2>
             <p className="inquiry-sub">Thanks! We&apos;ll review your requirements and get back to you shortly.</p>
+            <p className="inquiry-sub">A copy is on its way to {values.email}.</p>
             <div className="inquiry-actions">
               <button type="button" className="btn btn-accent inquiry-cta" onClick={close} data-autofocus>
                 Close
@@ -182,6 +184,21 @@ export function InquiryDialog({ open, onClose, services, contactEmail }: { open:
                     maxLength={100}
                     value={values.name}
                     onChange={(event) => update("name", event.target.value)}
+                    className="field inquiry-field"
+                  />
+                )}
+
+                {field === "email" && (
+                  <input
+                    {...control}
+                    type="email"
+                    name="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    placeholder="you@company.com"
+                    maxLength={200}
+                    value={values.email}
+                    onChange={(event) => update("email", event.target.value)}
                     className="field inquiry-field"
                   />
                 )}

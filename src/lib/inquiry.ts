@@ -1,16 +1,6 @@
-/** Project inquiry: fields, options and validation shared by the modal and the server action. */
+/** Project inquiry: fields and validation shared by the modal and the server action. Service options come from settings. */
 
-export const inquiryServices = [
-  "Website Development",
-  "E-commerce",
-  "Custom Software",
-  "AI / Automation",
-  "Mobile App",
-  "UI/UX Design",
-  "SEO",
-] as const;
-
-export const inquiryFields = ["name", "phone", "services", "businessDetails"] as const;
+export const inquiryFields = ["name", "email", "phone", "services", "businessDetails"] as const;
 
 export type InquiryField = (typeof inquiryFields)[number];
 export type InquiryValues = {
@@ -20,18 +10,25 @@ export type InquiryValues = {
   services: string[];
   businessDetails: string;
 };
-export type InquiryErrors = Partial<Record<keyof InquiryValues, string>>;
+export type InquiryErrors = Partial<Record<InquiryField, string>>;
 
 export const emptyInquiry: InquiryValues = { name: "", email: "", phone: "", services: [], businessDetails: "" };
 
 const phonePattern = /^\+?[\d\s\-().]+$/;
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function validateInquiryField(field: InquiryField, values: InquiryValues): string | undefined {
+export function validateInquiryField(field: InquiryField, values: InquiryValues, services: readonly string[]): string | undefined {
   switch (field) {
     case "name": {
       const name = values.name.trim();
       if (!name) return "Please tell us your name.";
       if (name.length > 100) return "Please keep your name under 100 characters.";
+      return undefined;
+    }
+    case "email": {
+      const email = values.email.trim();
+      if (!email) return "Please add your email so we can reply.";
+      if (email.length > 200 || !emailPattern.test(email)) return "Please enter a valid email address.";
       return undefined;
     }
     case "phone": {
@@ -43,8 +40,7 @@ export function validateInquiryField(field: InquiryField, values: InquiryValues)
     }
     case "services":
       if (values.services.length === 0) return "Pick at least one service.";
-      if (values.services.some((service) => !(inquiryServices as readonly string[]).includes(service)))
-        return "Please pick from the listed services.";
+      if (values.services.some((service) => !services.includes(service))) return "Please pick from the listed services.";
       return undefined;
     case "businessDetails": {
       const details = values.businessDetails.trim();
@@ -56,10 +52,10 @@ export function validateInquiryField(field: InquiryField, values: InquiryValues)
   }
 }
 
-export function validateInquiry(values: InquiryValues): InquiryErrors {
+export function validateInquiry(values: InquiryValues, services: readonly string[]): InquiryErrors {
   const errors: InquiryErrors = {};
   for (const field of inquiryFields) {
-    const error = validateInquiryField(field, values);
+    const error = validateInquiryField(field, values, services);
     if (error) errors[field] = error;
   }
   return errors;
