@@ -140,8 +140,9 @@ keeps user input on failure, and shows pending/success/error state. Deletes requ
   client-side check: image MIME types only, ≤5 MB.
 - On save, a replaced or removed image's old `fileId` is deleted via ImageKit's API (failures are logged, never
   block the save). Deleting a project/testimonial deletes its image too.
-- Rendering uses ImageKit URL transformations (`tr=w-…,f-auto`); `next.config.ts` adds the ImageKit host to
-  `images.remotePatterns` where `next/image` is used.
+- Public pages render ImageKit URLs through `next/image` (resizing and format negotiation by Next's optimiser);
+  `next.config.ts` adds `https://ik.imagekit.io/**` to `images.remotePatterns`. Files uploaded but never saved
+  (form abandoned) are left in ImageKit; that is accepted.
 
 ## Email (Resend)
 
