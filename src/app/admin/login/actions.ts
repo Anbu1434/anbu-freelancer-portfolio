@@ -23,7 +23,8 @@ export async function login(_state: LoginState, formData: FormData): Promise<Log
   if (!parsed.success) return invalidCredentials(typedEmail);
 
   const email = parsed.data.email.toLowerCase();
-  const ipLimited = limiter.hit(`ip:${await clientIp()}`);
+  const ipKey = `ip:${await clientIp()}`;
+  const ipLimited = limiter.hit(ipKey);
   const emailLimited = limiter.hit(`email:${email}`);
   if (ipLimited || emailLimited) return { error: "Too many attempts. Try again in 15 minutes.", email: typedEmail };
 
@@ -32,6 +33,8 @@ export async function login(_state: LoginState, formData: FormData): Promise<Log
   const valid = await verifyPassword(parsed.data.password, admin?.passwordHash ?? (await dummyHash));
   if (!admin || !valid) return invalidCredentials(typedEmail);
 
+  // Only failed attempts should count: a successful sign-in clears both counters.
+  limiter.reset(ipKey);
   limiter.reset(`email:${email}`);
   await setSessionCookie({ adminId: admin.id, sessionVersion: admin.sessionVersion });
   redirect("/admin");
