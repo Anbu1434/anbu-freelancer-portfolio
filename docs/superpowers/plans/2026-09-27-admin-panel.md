@@ -2213,7 +2213,7 @@ function secretKey() {
   return new TextEncoder().encode(secret);
 }
 
-export function signSession(payload: SessionPayload) {
+export async function signSession(payload: SessionPayload) {
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
