@@ -7,7 +7,7 @@ import { requireAdmin } from "@/lib/auth/dal";
 import { repos } from "@/lib/db/repos";
 import { projectSchema } from "@/lib/db/schemas";
 
-const actions = collectionActions({ repo: repos.projects, schema: projectSchema, tags: ["projects"], imageFields: ["image"] });
+const actions = collectionActions({ repo: repos.projects, schema: projectSchema, tags: ["projects"], imageFields: ["images"] });
 
 export async function createProject(input: unknown) {
   return actions.create(input);

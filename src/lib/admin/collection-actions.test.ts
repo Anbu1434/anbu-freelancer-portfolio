@@ -17,8 +17,8 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-const actions = collectionActions({ repo: repos.projects, schema: projectSchema, tags: ["projects"], imageFields: ["image"] });
-const project = { slug: "one", title: "One", description: "d", year: "2026", category: ["c"], technologies: ["t"], featured: false, features: [], metrics: [] };
+const actions = collectionActions({ repo: repos.projects, schema: projectSchema, tags: ["projects"], imageFields: ["images"] });
+const project = { slug: "one", title: "One", description: "d", year: "2026", category: ["Software"], technologies: ["t"], featured: false, features: [], metrics: [] };
 const image = (fileId: string) => ({ url: `https://ik.imagekit.io/demo/${fileId}.png`, fileId, alt: "" });
 
 describe("collectionActions", () => {
@@ -38,13 +38,18 @@ describe("collectionActions", () => {
     expect(await actions.create(project)).toMatchObject({ ok: false, fieldErrors: { slug: "Already in use." } });
   });
 
-  it("deletes the previous image when it is replaced, and on delete", async () => {
-    const created = await actions.create({ ...project, image: image("old") });
+  it("deletes replaced gallery images on update, and all of them on delete", async () => {
+    const created = await actions.create({ ...project, images: [image("keep"), image("old")] });
     if (!created.ok || !created.id) throw new Error("create failed");
-    await actions.update(created.id, { ...project, image: image("new") });
-    expect(deleteReplacedImages).toHaveBeenCalledWith([image("old")], [image("new")]);
+    await actions.update(created.id, { ...project, images: [image("keep"), image("new")] });
+    expect(deleteReplacedImages).toHaveBeenCalledWith([image("keep"), image("old")], [image("keep"), image("new")]);
     await actions.remove(created.id);
-    expect(deleteReplacedImages).toHaveBeenLastCalledWith([image("new")], []);
+    expect(deleteReplacedImages).toHaveBeenLastCalledWith([image("keep"), image("new")], []);
+  });
+
+  it("rejects more than three project images", async () => {
+    const result = await actions.create({ ...project, images: ["a", "b", "c", "d"].map(image) });
+    expect(result).toMatchObject({ ok: false, fieldErrors: { images: "Add up to 3 images." } });
   });
 
   it("fails cleanly when the item no longer exists", async () => {

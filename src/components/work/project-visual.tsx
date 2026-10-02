@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { ImageCarousel } from "@/components/work/image-carousel";
 import { cn } from "@/lib/cn";
 import type { Project } from "@/types/project";
 
@@ -11,21 +11,11 @@ type ProjectVisualProps = {
 };
 
 export function ProjectVisual({ project, sizes, preload, bordered = true, className }: ProjectVisualProps) {
+  const images = (project.images ?? []).map((image) => ({ src: image.src, alt: image.alt ?? `${project.title} interface` }));
   return (
-    <div className={cn("relative aspect-[16/10] overflow-hidden bg-paper-muted", bordered && "border-2 border-ink", className)}>
+    <div className={cn("relative aspect-[16/10] overflow-clip bg-paper-muted", bordered && "border-2 border-ink", className)}>
       <div className="absolute inset-0 transition-transform duration-400 ease-brutal group-hover:scale-[1.03]">
-        {project.image ? (
-          <Image
-            src={project.image}
-            alt={project.imageAlt ?? `${project.title} interface`}
-            fill
-            sizes={sizes}
-            preload={preload}
-            className="object-cover"
-          />
-        ) : (
-          <Placeholder project={project} />
-        )}
+        {images.length > 0 ? <ImageCarousel images={images} sizes={sizes} preload={preload} /> : <Placeholder project={project} />}
       </div>
     </div>
   );

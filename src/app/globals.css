@@ -1059,6 +1059,194 @@
   }
 }
 
+/* ---- Motion: load intro, scroll-driven effects, micro-interactions ----
+   Everything here is opt-in to motion and animates transform/opacity only. Without support
+   (or with reduced motion) the page renders exactly as it does statically. */
+
+/* Animatable integer behind the stat count-up (CSS counters can't interpolate on their own). */
+@property --count {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@layer components {
+  /* Underline bar under section headings; grows in on scroll where supported. */
+  .title-bar::after {
+    content: "";
+    display: block;
+    width: 2.5rem;
+    height: 0.3125rem;
+    margin-top: 0.625rem;
+    background: var(--accent);
+    transform-origin: left;
+  }
+
+  /* Case-study reading progress; only shown where scroll timelines exist. */
+  .read-progress {
+    display: none;
+  }
+
+  /* Success burst around the inquiry badge; invisible unless it animates. */
+  .inquiry-badge {
+    position: relative;
+  }
+
+  .inquiry-burst {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .inquiry-burst i {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin: -0.25rem;
+    border: 2px solid var(--ink);
+    background: var(--accent);
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Page headings stamp in word by word. No opacity: the text paints on the first frame, so LCP isn't delayed. */
+    .stamp-word {
+      display: inline-block;
+      animation: stamp 560ms cubic-bezier(0.2, 0.9, 0.25, 1.3) both;
+      animation-delay: calc(var(--w) * 70ms);
+    }
+
+    /* Stat tiles count up from 00. The real value stays in the DOM (transparent) for layout,
+       screen readers and copy; the counter is drawn over it and hidden from assistive tech. */
+    .count-up {
+      position: relative;
+      color: transparent;
+    }
+
+    .count-up::after {
+      content: counter(count, decimal-leading-zero) / "";
+      counter-reset: count var(--count);
+      position: absolute;
+      inset: 0;
+      color: var(--ink);
+      animation: count-up 1100ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both;
+    }
+
+    /* Buttons press fully into their shadow. Placed after the hover lift so it wins while held. */
+    .btn:not(:disabled):active,
+    .icon-btn:not(:disabled):active {
+      transform: translate(1px, 1px);
+      box-shadow: none;
+      transition-duration: 60ms;
+    }
+
+    .inquiry-step .inquiry-badge {
+      animation: badge-stamp 520ms cubic-bezier(0.2, 0.9, 0.25, 1.35) 80ms both;
+    }
+
+    .inquiry-burst i {
+      animation: burst 700ms cubic-bezier(0.16, 1, 0.3, 1) 260ms both;
+    }
+
+    @supports (animation-timeline: view()) {
+      .title-bar {
+        view-timeline: --title block;
+        animation: title-in linear both;
+        animation-timeline: --title;
+        animation-range: entry 10% entry 90%;
+      }
+
+      .title-bar::after {
+        animation: bar-grow linear both;
+        animation-timeline: --title;
+        animation-range: entry 40% cover 40%;
+      }
+
+      /* Project images drift inside their frame as the card crosses the viewport. */
+      .parallax {
+        animation: parallax linear both;
+        animation-timeline: view();
+      }
+
+      .read-progress {
+        display: block;
+        position: fixed;
+        inset: 0 0 auto;
+        z-index: 50;
+        height: 0.3125rem;
+        background: var(--accent);
+        transform-origin: left;
+        animation: grow-x linear both;
+        animation-timeline: scroll(root);
+      }
+    }
+  }
+
+  @keyframes stamp {
+    from {
+      transform: translateY(-0.4em) rotate(-3deg) scale(1.1);
+    }
+  }
+
+  @keyframes count-up {
+    from {
+      --count: 0;
+    }
+    to {
+      --count: var(--to);
+    }
+  }
+
+  @keyframes badge-stamp {
+    from {
+      opacity: 0;
+      transform: scale(1.8) rotate(-14deg);
+      box-shadow: 0 0 0 var(--ink);
+    }
+  }
+
+  @keyframes burst {
+    0% {
+      opacity: 1;
+      transform: rotate(calc(var(--i) * 45deg)) translateY(0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: rotate(calc(var(--i) * 45deg + 20deg)) translateY(-3rem) scale(0.4);
+    }
+  }
+
+  @keyframes title-in {
+    from {
+      opacity: 0;
+      transform: translateX(-1.5rem);
+    }
+  }
+
+  @keyframes bar-grow {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  @keyframes grow-x {
+    from {
+      transform: scaleX(0);
+    }
+  }
+
+  @keyframes parallax {
+    from {
+      transform: translateY(-4%) scale(1.1);
+    }
+    to {
+      transform: translateY(4%) scale(1.1);
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1078,10 +1266,9 @@
    Client reviews — pinned mobile deck
    --------------------------------------------------------------- */
 /* Client reviews, below lg, once review-carousel.tsx sets data-ready: the wrapper gets a tall height
-   and the stage (heading, deck, feedback panel) pins while the cards deal onto one grid cell. Each card
-   sits a little lower than the last so the ones beneath show as a layered edge; transforms, opacity and
-   --shade come from the script. Incoming cards wait behind the feedback panel; overflow-y: clip keeps
-   anything below the stage hidden but leaves the hard shadows (x) intact.
+   and the stage (heading, deck) pins while the cards deal onto one grid cell. Each card sits a little
+   lower than the last so the ones beneath show as a layered edge; transforms, opacity, z-index and
+   --shade come from the script. The next card waits visibly below the stage, so the stage doesn't clip.
    Without data-ready (reduced motion, short screens, desktop) none of this applies. Unlayered on purpose:
    it has to beat the list's own flex/gap utilities while pinned. */
 @media (max-width: 63.99rem) {
@@ -1096,16 +1283,9 @@
     display: flex;
     flex-direction: column;
     padding-block: 1.5rem 1rem;
-    overflow-x: visible;
-    overflow-y: clip;
   }
 
   /* Above the incoming cards, so they rise out from behind it. */
-  .review-pin[data-ready] .review-lead {
-    position: relative;
-    z-index: 1;
-  }
-
   .review-pin[data-ready] .review-stack {
     display: grid;
     padding-bottom: 0.5rem;

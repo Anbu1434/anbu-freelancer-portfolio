@@ -90,6 +90,6 @@ export function projectJsonLd(site: SiteConfig, project: Project) {
     keywords: project.technologies.join(", "),
     creator: person(site),
     // Images are absolute ImageKit URLs now.
-    ...(project.image && { image: project.image }),
+    ...(project.images?.length && { image: project.images.map((image) => image.src) }),
   };
 }

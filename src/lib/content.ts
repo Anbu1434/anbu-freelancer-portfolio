@@ -2,7 +2,7 @@ import { unstable_cache } from "next/cache";
 import { pad } from "@/lib/cn";
 import type { Stored } from "@/lib/db/ordered-repo";
 import { repos } from "@/lib/db/repos";
-import type { ProjectInput, Settings } from "@/lib/db/schemas";
+import type { ImageRef, ProjectInput, Settings } from "@/lib/db/schemas";
 import { findSettings } from "@/lib/db/settings";
 import { omit } from "@/lib/object";
 import type { Experience, ProcessStep, Service, StackGroup, Testimonial } from "@/types/content";
@@ -51,12 +51,17 @@ export async function getSiteConfig() {
   return toSiteConfig(await getSettings());
 }
 
+/** Projects saved before galleries existed hold a single `image`; read it as a one-image list. */
+export function storedProjectImages(stored: Stored<ProjectInput>): ImageRef[] {
+  const legacy = (stored as { image?: ImageRef }).image;
+  return stored.images ?? (legacy ? [legacy] : []);
+}
+
 export function toProject(stored: Stored<ProjectInput>, index: number): Project {
   return {
-    ...omit(stored, ...meta, "image"),
+    ...omit(stored as Stored<ProjectInput> & { image?: ImageRef }, ...meta, "image", "images"),
     number: pad(index + 1),
-    image: stored.image?.url,
-    imageAlt: stored.image?.alt || undefined,
+    images: storedProjectImages(stored).map((image) => ({ src: image.url, alt: image.alt || undefined })),
   };
 }
 

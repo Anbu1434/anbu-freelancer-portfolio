@@ -96,6 +96,10 @@ export const testimonialSchema = z.object({
 });
 export type TestimonialInput = z.infer<typeof testimonialSchema>;
 
+export const projectCategories = ["Web application", "Software", "SEO & Performance"] as const;
+/** Only these categories get a /work/[slug] case study; everything else links to the live site. */
+export const caseStudyCategories: readonly string[] = ["Software", "SEO & Performance"] satisfies (typeof projectCategories)[number][];
+
 export const projectSchema = z.object({
   slug: z
     .string()
@@ -106,9 +110,12 @@ export const projectSchema = z.object({
   title: text(120),
   description: text(300),
   year: text(10),
-  category: stringList(40).min(1, "Add at least one category."),
+  category: z
+    .array(z.enum(projectCategories, "Pick a category from the list."))
+    .min(1, "Pick at least one category.")
+    .refine((values) => new Set(values).size === values.length, "Each category only once."),
   technologies: stringList(40).min(1, "Add at least one technology."),
-  image: imageRefSchema.optional(),
+  images: z.array(imageRefSchema).max(3, "Add up to 3 images.").optional(),
   featured: z.boolean(),
   client: optionalText(120),
   role: optionalText(120),

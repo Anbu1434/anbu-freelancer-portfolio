@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, Check, X } from "lucide-react";
-import { useEffect, useRef, useState, type FormEvent, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type MouseEvent } from "react";
 import { cn } from "@/lib/cn";
 import {
   emptyInquiry,
@@ -27,10 +27,20 @@ const steps: Record<InquiryField, { label: string; heading: string; hint: string
 
 type Status = "editing" | "sending" | "success" | "error";
 
+/** A short hard side-to-side jolt for a field that failed validation. Restartable, so every failed attempt shakes. */
+function shake(element: HTMLElement | null) {
+  if (!element || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  element.animate(
+    [{ transform: "none" }, { transform: "translateX(-8px)" }, { transform: "translateX(7px)" }, { transform: "translateX(-5px)" }, { transform: "translateX(3px)" }, { transform: "none" }],
+    { duration: 380, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
+  );
+}
+
 /** Four-step project inquiry in a native modal dialog (Escape, focus trap and backdrop come built in). */
 export function InquiryDialog({ open, onClose, services, contactEmail }: { open: boolean; onClose: () => void; services: string[]; contactEmail: string }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const honeypotRef = useRef<HTMLInputElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const startedAtRef = useRef(0);
 
   const [step, setStep] = useState(0);
@@ -105,6 +115,7 @@ export function InquiryDialog({ open, onClose, services, contactEmail }: { open:
     if (error) {
       setErrors((current) => ({ ...current, [field]: error }));
       dialogRef.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus();
+      shake(bodyRef.current);
       return;
     }
     if (!isLast) return goTo(step + 1);
@@ -148,6 +159,11 @@ export function InquiryDialog({ open, onClose, services, contactEmail }: { open:
           <div className="inquiry-step" data-dir="next" role="status">
             <span aria-hidden="true" className="inquiry-badge">
               <Check />
+              <span className="inquiry-burst">
+                {Array.from({ length: 8 }, (_, index) => (
+                  <i key={index} style={{ "--i": index } as CSSProperties} />
+                ))}
+              </span>
             </span>
             <h2 id="inquiry-title" className="inquiry-heading title">
               Project request received!
@@ -173,7 +189,7 @@ export function InquiryDialog({ open, onClose, services, contactEmail }: { open:
                 {copy.hint}
               </p>
 
-              <div className="inquiry-body">
+              <div ref={bodyRef} className="inquiry-body">
                 {field === "name" && (
                   <input
                     {...control}

@@ -10,7 +10,7 @@ import { createMetadata } from "@/lib/seo";
 export async function generateMetadata(): Promise<Metadata> {
   return createMetadata(await getSiteConfig(), {
     title: "Services",
-  description: "Web applications, e-commerce, product UI, AI integration, SaaS development, and SEO & performance — from first idea to production.",
+  description: "Websites, custom software, SaaS development, AI integration, and SEO & performance — from first idea to production.",
     path: "/services",
   });
 }

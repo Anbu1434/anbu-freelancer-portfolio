@@ -53,7 +53,7 @@ export async function seedDatabase() {
     repos.projects,
     projectSchema,
     projects.map((project) => ({
-      ...omit(project, "number", "image", "imageAlt"),
+      ...omit(project, "number", "images"),
       features: project.features ?? [],
       metrics: project.metrics ?? [],
     })),

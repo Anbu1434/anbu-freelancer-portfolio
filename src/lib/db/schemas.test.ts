@@ -76,6 +76,13 @@ describe("projectSchema", () => {
   it("rejects slugs with spaces or capitals", () => {
     expect(projectSchema.safeParse({ ...base, slug: "My Project" }).success).toBe(false);
   });
+
+  it("only accepts the fixed project categories", () => {
+    expect(projectSchema.safeParse({ ...base, category: ["Branding"] }).success).toBe(false);
+    expect(projectSchema.safeParse({ ...base, category: [] }).success).toBe(false);
+    expect(projectSchema.safeParse({ ...base, category: ["Software", "Software"] }).success).toBe(false);
+    expect(projectSchema.safeParse({ ...base, category: ["Software", "SEO & Performance"] }).success).toBe(true);
+  });
 });
 
 describe("testimonialSchema", () => {

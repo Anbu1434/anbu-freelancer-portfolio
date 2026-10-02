@@ -1,3 +1,5 @@
+import { projectCategories } from "@/lib/db/schemas";
+
 export type ImageFolder = "projects" | "portrait" | "testimonials";
 
 type Base = { name: string; label: string; hint?: string };
@@ -10,7 +12,9 @@ export type FieldConfig = Base &
     | { type: "list"; itemLabel: string; multiline?: boolean }
     | { type: "toggle" }
     | { type: "select"; options: readonly { value: string; label: string }[] }
+    | { type: "checkboxes"; options: readonly string[] }
     | { type: "image"; folder: ImageFolder }
+    | { type: "images"; folder: ImageFolder; max: number }
     | { type: "pairs"; keys: readonly [string, string]; keyLabels: readonly [string, string] }
   );
 
@@ -20,7 +24,7 @@ export type FormSection = { title?: string; fields: FieldConfig[] };
 export function emptyValues(sections: FormSection[]): Record<string, unknown> {
   const values: Record<string, unknown> = {};
   for (const field of sections.flatMap((section) => section.fields)) {
-    if (field.type === "list" || field.type === "pairs") values[field.name] = [];
+    if (field.type === "list" || field.type === "pairs" || field.type === "checkboxes" || field.type === "images") values[field.name] = [];
     else if (field.type === "toggle") values[field.name] = false;
     else if (field.type === "select") values[field.name] = field.options[0]?.value ?? "";
     else if (field.type === "number" || field.type === "image") values[field.name] = undefined;
@@ -89,10 +93,23 @@ export const projectSections: FormSection[] = [
       { name: "slug", label: "URL slug", type: "text", hint: "Used in /work/<slug>. Lowercase, numbers and dashes." },
       { name: "description", label: "One-line description", type: "textarea", rows: 2 },
       { name: "year", label: "Year", type: "text" },
-      { name: "category", label: "Categories", type: "list", itemLabel: "Category", hint: "“Web application” + a live URL links the card straight to the live site." },
+      {
+        name: "category",
+        label: "Categories",
+        type: "checkboxes",
+        options: projectCategories,
+        hint: "Software and SEO & Performance get a case study page. Web applications link straight to the live URL.",
+      },
       { name: "technologies", label: "Technologies", type: "list", itemLabel: "Technology" },
-      { name: "featured", label: "Feature on the home page", type: "toggle" },
-      { name: "image", label: "Cover image", type: "image", folder: "projects" },
+      { name: "featured", label: "Feature on the home page", type: "toggle", hint: "The home page shows the first 3 featured projects, in list order." },
+      {
+        name: "images",
+        label: "Project images (up to 3)",
+        type: "images",
+        folder: "projects",
+        max: 3,
+        hint: "The first is the cover. Two or more rotate automatically on the card and case study page. Cropped to 16:10 (e.g. 1600 × 1000), max 5 MB each.",
+      },
     ],
   },
   {
@@ -105,7 +122,7 @@ export const projectSections: FormSection[] = [
     ],
   },
   {
-    title: "Case study",
+    title: "Case study (Software and SEO & Performance only)",
     fields: [
       { name: "overview", label: "Overview", type: "textarea", rows: 4 },
       { name: "problem", label: "Problem", type: "textarea", rows: 4 },

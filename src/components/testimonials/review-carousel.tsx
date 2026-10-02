@@ -8,7 +8,6 @@ type ReviewCarouselProps = {
   title: string;
   titleId: string;
   /** The feedback summary: first column beside the carousel on desktop, under the card deck on mobile. */
-  lead: ReactNode;
   children: ReactNode;
 };
 
@@ -29,9 +28,10 @@ const SHADE_STEP = 0.07;
 const MAX_DEPTH = 3;
 /** Incoming cards grow from this scale to 1 as they land. */
 const ENTER_SCALE = 0.94;
-/** Incoming cards start this far below the current card, tucked behind the feedback panel, and fade in over this share of their step. */
+/** Incoming cards wait this far below the current card, filling the space under the deck. */
 const ENTER_GAP = 20;
-const FADE_IN = 0.2;
+/** The next card fades into that waiting spot over the last share of the previous card's step, once it has mostly left. */
+const QUEUE_FADE = 0.5;
 /** Share of the remaining distance covered each frame; smooths coarse scroll input without lagging. */
 const SMOOTHING = 0.2;
 
@@ -52,18 +52,17 @@ const smoothstep = (t: number) => t * t * (3 - 2 * t);
  * Below 1024px the section pins while the reviews deal onto a deck (see `.review-pin` in globals.css).
  * The wrapper is made tall enough for one scroll step per card plus a short hold; while it scrolls past,
  * the sticky stage stays put and scroll progress drives every card. Each card's step is spent entirely on
- * visible motion: the incoming card starts right under the current one, tucked behind the feedback panel,
- * fades in as soon as its step begins, then slides up over the current card and grows to full size, while
+ * visible motion: the next card already waits right under the current one, filling the space below the
+ * deck, then slides up over the current card and grows to full size, while
  * the cards beneath ease back in scale and shade. Only once the last card has landed (plus a short hold)
  * does the wrapper run out and release the page.
  *
- * The stage holds the heading, the deck and the feedback panel, so the pinned screen is the section's own
- * content. It is only as tall as that content and pins centred in the space under the header, so any
- * leftover screen splits into an even margin above and below rather than one blank block. The hold after
- * the last card is at least that lower margin, so the next section only comes into view once every card
- * has landed; then it rises to its usual gap and the page scrolls on. If the content is taller than the
- * screen, the stage pins bottom-aligned instead, letting the heading scroll out of view while the deck and
- * panel stay fully visible.
+ * The stage holds the heading and the deck, so the pinned screen is the section's own
+ * content. It is only as tall as that content and pins directly under the header, so the heading never
+ * floats below a blank band; the screen below the deck is filled by the waiting card, and after the last
+ * card lands, by the next section rising into view. If the content is taller than the
+ * screen, the stage pins bottom-aligned instead, letting the heading scroll out of view while the deck
+ * stays fully visible.
  *
  * Pinning is switched on here (data-ready) only when motion is allowed, there is more than one review,
  * and the stage fits the viewport; otherwise the reviews stay a plain list.
@@ -92,6 +91,7 @@ function usePinnedStack(pinRef: RefObject<HTMLDivElement | null>, count: number)
       for (const card of cards()) {
         card.style.transform = "";
         card.style.opacity = "";
+        card.style.zIndex = "";
         card.style.removeProperty("--shade");
       }
     };
@@ -107,8 +107,11 @@ function usePinnedStack(pinRef: RefObject<HTMLDivElement | null>, count: number)
         const scale = (ENTER_SCALE + (1 - ENTER_SCALE) * arrive) * (1 - depth * SCALE_STEP);
         const offset = (1 - arrive) * (enterFrom[index] ?? 0);
         card.style.transform = `translate3d(0, ${offset.toFixed(1)}px, 0) scale(${scale.toFixed(4)})`;
-        // Fades in quickly at the start of its step, so the card is visible from the first bit of scroll.
-        card.style.opacity = index === 0 ? "" : smoothstep(clamp(progress[index] / FADE_IN, 0, 1)).toFixed(3);
+        // Only the next card waits visibly under the deck; the one after it fades in once the next has mostly left.
+        const queued = clamp((current - index + 1 + QUEUE_FADE) / QUEUE_FADE, 0, 1);
+        card.style.opacity = index === 0 ? "" : smoothstep(queued).toFixed(3);
+        // A moving or landed card passes over the waiting one, not under it.
+        card.style.zIndex = String(index === 0 || progress[index] > 0 ? list.length + index : index);
         card.style.setProperty("--shade", (depth * SHADE_STEP).toFixed(3));
       });
     };
@@ -148,12 +151,11 @@ function usePinnedStack(pinRef: RefObject<HTMLDivElement | null>, count: number)
       // Taller than the screen: pin bottom-aligned. Only the heading may go out of view — if the deck
       // itself would be cut off (landscape phones), keep the plain list instead.
       if (-spare > deck.getBoundingClientRect().top - stage.getBoundingClientRect().top) return reset();
-      stage.style.setProperty("top", `${header + (spare > 0 ? spare / 2 : spare)}px`);
+      stage.style.setProperty("top", `${header + Math.min(spare, 0)}px`);
 
       step = screen * STEP;
-      const hold = Math.max(step * HOLD, spare / 2);
-      pin.style.height = `${height + step * (count - 1) + hold}px`;
-      // Each incoming card starts one gap below the current card, behind the feedback panel.
+      pin.style.height = `${height + step * (count - 1) + step * HOLD}px`;
+      // Each incoming card waits one gap below the current card, in the space under the deck.
       // (Measured before any transform is applied; all cards share the deck row's bottom edge.)
       const list = cards();
       const bottom = list[0].getBoundingClientRect().bottom;
@@ -184,11 +186,11 @@ function usePinnedStack(pinRef: RefObject<HTMLDivElement | null>, count: number)
 }
 
 /**
- * From 1024px the reviews become a scroll-snap track (2 per view, 3 from 1536px) beside the lead panel.
+ * From 1024px the reviews become a scroll-snap track (2 per view, 3 from 1280px).
  * Controls appear only when there are more reviews than fit; below 1024px the section pins and the cards
  * stack on scroll (usePinnedStack).
  */
-export function ReviewCarousel({ title, titleId, lead, children }: ReviewCarouselProps) {
+export function ReviewCarousel({ title, titleId, children }: ReviewCarouselProps) {
   const pinRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLUListElement>(null);
   const trackId = useId();
@@ -268,8 +270,7 @@ export function ReviewCarousel({ title, titleId, lead, children }: ReviewCarouse
             {title}
           </PageTitle>
 
-          <div className="mt-6 grid gap-5 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] 2xl:grid-cols-[minmax(0,1fr)_minmax(0,3fr)]">
-            <div className="grid max-lg:hidden">{lead}</div>
+          <div className="mt-6 lg:mt-8">
             {/* Below lg: the card deck. From lg: a scroll-snap row, where the negative margin + padding
                 leave room for the cards' hard shadow inside the scroll box. */}
             <ul
@@ -283,15 +284,13 @@ export function ReviewCarousel({ title, titleId, lead, children }: ReviewCarouse
                 <li
                   key={index}
                   style={{ "--i": index } as CSSProperties}
-                  className="flex lg:w-[calc((100%-1.25rem)/2)] lg:shrink-0 lg:snap-start 2xl:w-[calc((100%-2.5rem)/3)] [&>*]:w-full"
+                  className="flex lg:w-[calc((100%-1.25rem)/2)] lg:shrink-0 lg:snap-start xl:w-[calc((100%-2.5rem)/3)] [&>*]:w-full"
                 >
                   {slide}
                 </li>
               ))}
             </ul>
           </div>
-          {/* Mobile: the feedback panel sits in the pinned stage under the deck (above the incoming cards). */}
-          <div className="review-lead mt-5 grid lg:hidden">{lead}</div>
         </div>
       </div>
     </>

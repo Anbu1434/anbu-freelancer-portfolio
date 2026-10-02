@@ -5,6 +5,8 @@ panel for editing every section. Content lives in MongoDB, images on ImageKit, a
 The design and engineering spec lives in `freelancer_brutalist_portfolio_clean_minimal_master_spec.md`; the admin
 panel's design is in `docs/superpowers/specs/2026-09-27-admin-panel-design.md`.
 
+![AnbuDev home page on desktop: profile card, selected work and client reviews](image.png)
+
 ## Commands
 
 ```bash

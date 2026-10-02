@@ -55,9 +55,57 @@ export function FieldInput({ id, field, value, error, onChange }: Props) {
         </select>
       );
       break;
+    case "checkboxes": {
+      const checked = (value as string[] | undefined) ?? [];
+      control = (
+        <div className="flex flex-wrap gap-x-5 gap-y-2" id={id} role="group" aria-describedby={describedBy}>
+          {field.options.map((option) => (
+            <label key={option} className="flex items-center gap-2 text-sm font-bold">
+              <input
+                type="checkbox"
+                className="size-5 accent-[var(--accent)]"
+                checked={checked.includes(option)}
+                onChange={(event) => onChange(event.target.checked ? [...checked, option] : checked.filter((item) => item !== option))}
+              />
+              {option}
+            </label>
+          ))}
+        </div>
+      );
+      break;
+    }
     case "image":
       control = <ImageField id={id} folder={field.folder} value={value as ImageRef | undefined} onChange={onChange} />;
       break;
+    case "images": {
+      const images = (value as ImageRef[] | undefined) ?? [];
+      control = (
+        <div className="grid gap-4" id={id} role="group" aria-describedby={describedBy}>
+          {images.map((image, index) => (
+            <div key={image.fileId} className="grid gap-2 border-2 border-ink bg-paper p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="meta font-bold">{index === 0 ? "Cover" : `Image ${index + 1}`}</p>
+                {index > 0 && (
+                  <button type="button" className="btn btn-white btn-sm" onClick={() => onChange([image, ...images.filter((_, i) => i !== index)])}>
+                    Make cover
+                  </button>
+                )}
+              </div>
+              <ImageField
+                id={`${id}-${index}`}
+                folder={field.folder}
+                value={image}
+                onChange={(next) => onChange(next ? images.map((current, i) => (i === index ? next : current)) : images.filter((_, i) => i !== index))}
+              />
+            </div>
+          ))}
+          {images.length < field.max && (
+            <ImageField id={`${id}-new`} folder={field.folder} value={undefined} onChange={(next) => next && onChange([...images, next])} />
+          )}
+        </div>
+      );
+      break;
+    }
     case "list": {
       const items = (value as string[] | undefined) ?? [];
       const set = (next: string[]) => onChange(next);

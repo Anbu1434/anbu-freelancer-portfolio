@@ -3,6 +3,7 @@ import Image from "next/image";
 import { StartProjectButton } from "@/components/inquiry/start-project-button";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card } from "@/components/ui/card";
+import { CountUp } from "@/components/ui/count-up";
 import { SocialLinks } from "@/components/ui/social-links";
 import { getProjects, getServices, getSettings, getStack, toSiteConfig } from "@/lib/content";
 import { cn, initials, pad } from "@/lib/cn";
@@ -15,10 +16,10 @@ export async function ProfileCard({ className }: { className?: string }) {
   const siteConfig = toSiteConfig(settings);
   const about = settings.about;
   const tiles = [
-    { value: pad(projects.length), label: "Projects" },
-    { value: pad(services.length), label: "Services" },
-    { value: pad(stack.reduce((total, group) => total + group.items.length, 0)), label: "Technologies" },
-    { value: siteConfig.year, label: availabilityLabels[siteConfig.availability].short },
+    { value: pad(projects.length), label: "Projects", count: true },
+    { value: pad(services.length), label: "Services", count: true },
+    { value: pad(stack.reduce((total, group) => total + group.items.length, 0)), label: "Technologies", count: true },
+    { value: siteConfig.year, label: availabilityLabels[siteConfig.availability].short, count: false },
   ];
 
   return (
@@ -30,21 +31,22 @@ export async function ProfileCard({ className }: { className?: string }) {
       <Portrait siteConfig={siteConfig} />
 
       <div className="flex min-w-0 flex-col">
-        <div className="flex flex-wrap items-start justify-between gap-3">
+        {/* Phones: socials get their own row under the name; wider: they sit top-right. */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
           <div className="min-w-0">
             <h2 className="text-[clamp(1.5rem,2.6vw,2rem)] font-bold leading-tight">{siteConfig.name}</h2>
             <a href={`mailto:${siteConfig.email}`} className="mt-1 inline-block break-all text-sm hover:underline">
               {siteConfig.email}
             </a>
           </div>
-          <SocialLinks />
+          <SocialLinks labelledOnPhones />
         </div>
 
         <dl className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-2 2xl:grid-cols-4">
           {tiles.map((tile) => (
             <div key={tile.label} className="tile flex flex-col-reverse">
               <dt className="text-xs font-medium">{tile.label}</dt>
-              <dd className="text-xl font-bold leading-tight">{tile.value}</dd>
+              <dd className="text-xl font-bold leading-tight">{tile.count ? <CountUp value={tile.value} /> : tile.value}</dd>
             </div>
           ))}
         </dl>
@@ -77,6 +79,8 @@ function Portrait({ siteConfig }: { siteConfig: SiteConfig }) {
           alt={siteConfig.portraitAlt ?? `Portrait of ${siteConfig.name}`}
           fill
           sizes="(min-width: 1024px) 13rem, (min-width: 640px) 11rem, 100vw"
+          // The portrait is the home page's LCP element.
+          preload
           className="object-cover"
         />
       ) : (

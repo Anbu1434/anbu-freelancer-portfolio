@@ -23,8 +23,9 @@ export default async function WorkPage() {
         Selected projects across web applications, product UI, and AI.
       </p>
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:mt-10 xl:grid-cols-3">
-        {projects.map((project) => (
-          <ProjectCard key={project.slug} project={project} />
+        {projects.map((project, index) => (
+          // The first card's image is the page's LCP element.
+          <ProjectCard key={project.slug} project={project} preload={index === 0} />
         ))}
       </div>
       <CtaCard />

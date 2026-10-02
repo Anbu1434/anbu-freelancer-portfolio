@@ -6,9 +6,8 @@ export type Project = {
   year: string;
   category: string[];
   technologies: string[];
-  /** Path under /public. Without one, a typography-led placeholder is rendered. */
-  image?: string;
-  imageAlt?: string;
+  /** Up to 3 ImageKit images; more than one rotates as a carousel. Without any, a typography-led placeholder is rendered. */
+  images?: { src: string; alt?: string }[];
   featured: boolean;
   client?: string;
   role?: string;

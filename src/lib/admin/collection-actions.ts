@@ -11,7 +11,7 @@ type Options<S extends z.ZodType<object>> = {
   repo: OrderedRepo<z.output<S>>;
   schema: S;
   tags: ContentTag[];
-  /** Top-level fields holding an ImageRef; replaced or removed files are deleted from ImageKit. */
+  /** Top-level fields holding an ImageRef or a list of them; replaced or removed files are deleted from ImageKit. */
   imageFields?: string[];
 };
 
@@ -20,7 +20,8 @@ type Options<S extends z.ZodType<object>> = {
  * async function inside a "use server" file — only those can be called from the browser.
  */
 export function collectionActions<S extends z.ZodType<object>>({ repo, schema, tags, imageFields = [] }: Options<S>) {
-  const imagesOf = (doc: object | null) => imageFields.map((field) => (doc as Record<string, ImageRef | undefined> | null)?.[field]);
+  const imagesOf = (doc: object | null) =>
+    imageFields.flatMap((field) => (doc as Record<string, ImageRef | ImageRef[] | undefined> | null)?.[field] ?? []);
 
   return {
     async create(input: unknown): Promise<ActionResult> {

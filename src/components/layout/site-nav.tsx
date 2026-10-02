@@ -24,7 +24,8 @@ function isActive(pathname: string, href: string) {
 function Logo({ brand, onClick }: { brand: string; onClick?: () => void }) {
   return (
     <Link href="/" onClick={onClick} className="flex items-center gap-3">
-      <span aria-hidden="true" className="grid size-10 place-items-center border-2 border-ink bg-paper text-ink shadow-hard-sm">
+      {/* The mark is desktop-only; the mobile bar shows just the name. */}
+      <span aria-hidden="true" className="grid size-10 place-items-center border-2 border-ink bg-paper text-ink shadow-hard-sm max-lg:hidden">
         <CodeXml className="size-5" />
       </span>
       <span className="title text-xl">{brand}</span>
@@ -130,7 +131,7 @@ export function SiteNav({ site }: { site: NavSite }) {
       </header>
 
       <header ref={mobileRef} className="sticky top-0 z-40 bg-frame text-on-frame lg:hidden">
-        <div className="flex h-header items-center justify-between gap-4 px-2 sm:px-4">
+        <div className="flex h-header items-center justify-between gap-4 px-4">
           <Logo brand={site.brand} onClick={close} />
           <button
             ref={toggleRef}

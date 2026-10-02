@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { ButtonLink } from "@/components/ui/button-link";
 import { Card, cardClass } from "@/components/ui/card";
+import { CountUp } from "@/components/ui/count-up";
 import { JsonLd } from "@/components/ui/json-ld";
 import { ListCard, type ListCardItem } from "@/components/ui/list-card";
 import { PageTitle } from "@/components/ui/page-title";
@@ -106,13 +107,14 @@ export default async function CaseStudyPage({ params }: Props) {
 
   const tiles = [
     { value: project.year, label: "Year" },
-    { value: pad(project.technologies.length), label: "Technologies" },
-    ...(project.features?.length ? [{ value: pad(project.features.length), label: "Key features" }] : []),
+    { value: pad(project.technologies.length), label: "Technologies", count: true },
+    ...(project.features?.length ? [{ value: pad(project.features.length), label: "Key features", count: true }] : []),
   ];
 
   return (
     <>
       <JsonLd data={projectJsonLd(site, project)} />
+      <div aria-hidden="true" className="read-progress" />
 
       <div className={splitClass}>
         <section aria-labelledby="project-title" className={splitColumnClass}>
@@ -129,7 +131,7 @@ export default async function CaseStudyPage({ params }: Props) {
               {tiles.map((tile) => (
                 <div key={tile.label} className="tile flex flex-col-reverse">
                   <dt className="text-xs font-medium">{tile.label}</dt>
-                  <dd className="text-xl font-bold leading-tight">{tile.value}</dd>
+                  <dd className="text-xl font-bold leading-tight">{"count" in tile ? <CountUp value={tile.value} /> : tile.value}</dd>
                 </div>
               ))}
             </dl>

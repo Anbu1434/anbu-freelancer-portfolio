@@ -57,7 +57,7 @@ describe("ordered repository", () => {
 
   it("enforces unique project slugs", async () => {
     const project = {
-      slug: "one", title: "One", description: "d", year: "2026", category: ["c"], technologies: ["t"],
+      slug: "one", title: "One", description: "d", year: "2026", category: ["Software" as const], technologies: ["t"],
       featured: false, features: [], metrics: [],
     };
     await repos.projects.create(project);
