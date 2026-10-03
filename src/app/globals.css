@@ -1164,12 +1164,6 @@
         animation-range: entry 40% cover 40%;
       }
 
-      /* Project images drift inside their frame as the card crosses the viewport. */
-      .parallax {
-        animation: parallax linear both;
-        animation-timeline: view();
-      }
-
       .read-progress {
         display: block;
         position: fixed;
@@ -1234,15 +1228,6 @@
   @keyframes grow-x {
     from {
       transform: scaleX(0);
-    }
-  }
-
-  @keyframes parallax {
-    from {
-      transform: translateY(-4%) scale(1.1);
-    }
-    to {
-      transform: translateY(4%) scale(1.1);
     }
   }
 }

@@ -56,8 +56,8 @@ export function ImageCarousel({ images, sizes, preload }: Props) {
 
   return (
     <div ref={root} className="absolute inset-0">
-      {/* Images drift with scroll (.parallax); the dots stay put so they never clip. */}
-      <div className="parallax absolute inset-0">
+      {/* Contained, not cropped: screenshots of any aspect ratio show in full. */}
+      <div className="absolute inset-0">
         {(rotating ? images : images.slice(0, 1)).map((image, index) => (
           <Image
             key={image.src}
@@ -68,7 +68,7 @@ export function ImageCarousel({ images, sizes, preload }: Props) {
             preload={preload && index === 0}
             onLoad={index === 0 ? onFirstLoad : undefined}
             aria-hidden={index !== active}
-            className={cn("object-cover transition-opacity duration-700 ease-brutal", index === active ? "opacity-100" : "opacity-0")}
+            className={cn("object-contain transition-opacity duration-700 ease-brutal", index === active ? "opacity-100" : "opacity-0")}
           />
         ))}
       </div>
