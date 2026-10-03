@@ -5,6 +5,7 @@ import { SiteNav } from "@/components/layout/site-nav";
 import { Topbar } from "@/components/layout/topbar";
 import { ContextCursor } from "@/components/ui/context-cursor";
 import { RevealObserver } from "@/components/ui/reveal-observer";
+import { ServicePop } from "@/components/ui/service-pop";
 import { getSettings } from "@/lib/content";
 import type { NavSite } from "@/types/site";
 
@@ -38,6 +39,7 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
       </div>
       <RevealObserver />
       <ContextCursor />
+      <ServicePop services={settings.inquiryServices} />
     </InquiryProvider>
   );
 }
