@@ -44,6 +44,7 @@ export const settingsSchema = z.object({
   email: z.email("Enter a valid email.").max(200),
   year: text(10),
   portrait: imageRefSchema.optional(),
+  avatar: imageRefSchema.optional(),
   resumeUrl: optionalUrl,
   social: z.object({ github: optionalUrl, fiverr: optionalUrl, upwork: optionalUrl }),
   builtWith: text(200),

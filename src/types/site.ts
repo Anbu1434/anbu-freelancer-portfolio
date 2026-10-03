@@ -15,6 +15,8 @@ export type SiteConfig = {
   /** ImageKit URL. Without one, an initials monogram is shown. */
   portrait?: string;
   portraitAlt?: string;
+  /** ImageKit URL for the top bar button. Without one, the initials are shown. */
+  avatar?: string;
   resumeUrl?: string;
   social: {
     github?: string;
@@ -26,4 +28,4 @@ export type SiteConfig = {
 };
 
 /** The slice of the site config the client-side navigation needs. */
-export type NavSite = Pick<SiteConfig, "brand" | "name" | "email" | "resumeUrl" | "availability">;
+export type NavSite = Pick<SiteConfig, "brand" | "name" | "email" | "resumeUrl" | "availability" | "avatar">;

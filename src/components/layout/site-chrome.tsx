@@ -3,6 +3,7 @@ import { InquiryProvider } from "@/components/inquiry/inquiry-provider";
 import { Footer } from "@/components/layout/footer";
 import { SiteNav } from "@/components/layout/site-nav";
 import { Topbar } from "@/components/layout/topbar";
+import { ClickSounds } from "@/components/ui/click-sounds";
 import { ContextCursor } from "@/components/ui/context-cursor";
 import { RevealObserver } from "@/components/ui/reveal-observer";
 import { ServicePop } from "@/components/ui/service-pop";
@@ -18,6 +19,7 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
     email: settings.email,
     resumeUrl: settings.resumeUrl,
     availability: settings.availability,
+    avatar: settings.avatar?.url,
   };
 
   return (
@@ -40,6 +42,7 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
       <RevealObserver />
       <ContextCursor />
       <ServicePop services={settings.inquiryServices} />
+      <ClickSounds />
     </InquiryProvider>
   );
 }

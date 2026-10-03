@@ -1,9 +1,11 @@
 "use client";
 
 import { ArrowLeft, Mail } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Availability } from "@/components/ui/availability";
+import { SoundToggle } from "@/components/ui/sound-toggle";
 import { navigation } from "@/lib/site-constants";
 import type { NavSite } from "@/types/site";
 import { initials } from "@/lib/cn";
@@ -29,11 +31,12 @@ export function Topbar({ site }: { site: NavSite }) {
         <p className="meta hidden h-11 items-center border-2 border-ink bg-white px-3 sm:flex">
           <Availability status={site.availability} long />
         </p>
+        <SoundToggle />
         <a href={`mailto:${site.email}`} className="icon-btn bg-accent" aria-label={`Email ${site.email}`}>
           <Mail aria-hidden="true" />
         </a>
-        <Link href="/about" className="icon-btn bg-tint font-mono text-sm font-extrabold" aria-label="About me">
-          {initials(site.name)}
+        <Link href="/about" className="icon-btn relative overflow-hidden bg-tint font-mono text-sm font-extrabold" aria-label="About me">
+          {site.avatar ? <Image src={site.avatar} alt="" fill sizes="2.75rem" className="object-cover" /> : initials(site.name)}
         </Link>
       </div>
     </div>

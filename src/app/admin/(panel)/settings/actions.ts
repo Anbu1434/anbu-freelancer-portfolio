@@ -14,7 +14,7 @@ export async function saveSettingsAction(input: unknown): Promise<ActionResult> 
 
   try {
     const previous = await saveSettings(parsed.data);
-    await deleteReplacedImages([previous?.portrait], [parsed.data.portrait]);
+    await deleteReplacedImages([previous?.portrait, previous?.avatar], [parsed.data.portrait, parsed.data.avatar]);
     refresh("settings");
     return { ok: true };
   } catch (error) {

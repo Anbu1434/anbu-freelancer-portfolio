@@ -148,6 +148,7 @@ export const settingsSections: FormSection[] = [
       { name: "location", label: "Location", type: "text" },
       { name: "email", label: "Public email", type: "email" },
       { name: "portrait", label: "Portrait", type: "image", folder: "portrait" },
+      { name: "avatar", label: "Top bar avatar (shows your initials without one)", type: "image", folder: "portrait" },
       { name: "resumeUrl", label: "Resume URL", type: "url" },
       {
         name: "availability",

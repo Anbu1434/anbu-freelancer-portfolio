@@ -40,6 +40,7 @@ export function toSiteConfig(settings: Settings): SiteConfig {
     year: settings.year,
     portrait: settings.portrait?.url,
     portraitAlt: settings.portrait?.alt || undefined,
+    avatar: settings.avatar?.url,
     resumeUrl: settings.resumeUrl,
     social: settings.social,
     builtWith: settings.builtWith,
