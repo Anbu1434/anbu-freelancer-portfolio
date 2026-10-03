@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { playSound } from "@/lib/sound";
 
 /** Two taps closer than this in time and distance count as a double tap. */
 const DOUBLE_TAP_MS = 300;
@@ -37,6 +38,7 @@ export function ServicePop({ services }: { services: string[] }) {
       tag.textContent = services[next];
       next = (next + 1) % services.length;
       layer.append(tag);
+      playSound("pop");
 
       // Centre on the tap, but keep the whole tag on screen.
       const { width, height } = tag.getBoundingClientRect();
