@@ -25,7 +25,7 @@ export async function SiteChrome({ children }: { children: ReactNode }) {
       <a href="#main-content" className="skip-link">
         Skip to content
       </a>
-      <div className="lg:grid lg:min-h-dvh lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <div className="no-select lg:grid lg:min-h-dvh lg:grid-cols-[15rem_minmax(0,1fr)]">
         <SiteNav site={site} />
         <div id="page" className="px-2 pb-2 sm:px-4 sm:pb-4 lg:py-6 lg:pl-0 lg:pr-6">
           <div className="flex min-h-[calc(100dvh-4.5rem)] flex-col border-2 border-ink bg-paper lg:min-h-[calc(100dvh-3rem)]">

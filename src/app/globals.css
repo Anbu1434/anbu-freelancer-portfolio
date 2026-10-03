@@ -155,6 +155,19 @@
     letter-spacing: -0.01em;
   }
 
+  /* Public site: page text can't be selected or long-pressed into a copy menu; form fields still can. */
+  .no-select {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  .no-select :is(input, textarea, [contenteditable="true"]) {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+  }
+
   .skip-link {
     position: absolute;
     top: 0.75rem;
@@ -672,6 +685,14 @@
     white-space: nowrap;
     opacity: 0;
   }
+
+  /* Each pop takes the next colour in turn. */
+  .service-pop[data-tone="1"] { background: #ffd23f; }
+  .service-pop[data-tone="2"] { background: #8ee3c8; }
+  .service-pop[data-tone="3"] { background: #c7b8ff; }
+  .service-pop[data-tone="4"] { background: #9fd4ff; }
+  .service-pop[data-tone="5"] { background: var(--accent-soft); }
+  .service-pop[data-tone="6"] { background: var(--ink); color: var(--on-frame); box-shadow: 3px 3px 0 var(--accent); }
 
   .cursor[data-mode="label"][data-pressed="true"] .cursor-tag {
     box-shadow: none;

@@ -6,6 +6,8 @@ import { useEffect, useRef } from "react";
 const DOUBLE_TAP_MS = 300;
 const DOUBLE_TAP_PX = 30;
 const MAX_POPS = 6;
+/** Colour variants in globals.css (.service-pop[data-tone]). */
+const TONES = 7;
 const SKIP = 'a, button, [role="button"], label, summary, select, input, textarea, [contenteditable="true"], dialog, .chip';
 
 /**
@@ -21,6 +23,7 @@ export function ServicePop({ services }: { services: string[] }) {
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let next = 0;
+    let tone = 0;
     let last = { time: 0, x: 0, y: 0 };
 
     function pop(x: number, y: number) {
@@ -29,6 +32,8 @@ export function ServicePop({ services }: { services: string[] }) {
 
       const tag = document.createElement("span");
       tag.className = "service-pop";
+      tag.dataset.tone = String(tone);
+      tone = (tone + 1) % TONES;
       tag.textContent = services[next];
       next = (next + 1) % services.length;
       layer.append(tag);
