@@ -75,6 +75,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-size-adjust: 100%;
+    /* No double-tap zoom, so a double tap can pop a service tag instead. Pinch zoom still works. */
+    touch-action: manipulation;
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -646,6 +648,29 @@
   .cursor[data-mode="label"] .cursor-tag {
     opacity: 1;
     transform: rotate(-3deg);
+  }
+
+  /* Double-tap easter egg: service names pop out where the page was tapped. */
+  .service-pop-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .service-pop {
+    position: absolute;
+    padding: 0.375rem 0.625rem;
+    border: var(--border) solid var(--ink);
+    background: var(--accent);
+    color: var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    white-space: nowrap;
+    opacity: 0;
   }
 
   .cursor[data-mode="label"][data-pressed="true"] .cursor-tag {
